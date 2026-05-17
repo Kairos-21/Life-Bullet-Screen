@@ -46,20 +46,39 @@ export default function InputPanel() {
     setContent(sampleTexts[contentType])
   }
 
-  const handleShowDemo = () => {
-    loadSampleResult(sampleTexts.chat)
+  const demoOptions = [
+    { value: 'chat' as ContentType, label: '聊天', sub: '打工人夜话', icon: '💬', color: 'from-cyan-500 to-blue-500' },
+    { value: 'diary' as ContentType, label: '日记', sub: '内心独白', icon: '📝', color: 'from-purple-500 to-pink-500' },
+    { value: 'voice' as ContentType, label: '语音', sub: '深夜碎碎念', icon: '🎙️', color: 'from-orange-500 to-red-500' },
+    { value: 'social' as ContentType, label: '朋友圈', sub: '社交人设', icon: '📱', color: 'from-green-500 to-teal-500' },
+  ]
+
+  const handleShowDemo = (type: ContentType) => {
+    loadSampleResult(sampleTexts[type], type)
   }
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
-      {/* Demo button */}
+      {/* Demo grid */}
       <div className="text-center mb-4">
-        <button
-          onClick={handleShowDemo}
-          className="px-6 py-2.5 rounded-full text-sm font-bold bg-gradient-to-r from-danmaku-accent to-danmaku-gold text-white shadow-lg shadow-danmaku-accent/30 hover:shadow-xl hover:shadow-danmaku-accent/40 active:scale-95 transition-all cursor-pointer"
-        >
-          查看范例 — 看看 AI 能分析出什么
-        </button>
+        <p className="text-xs text-danmaku-muted mb-3">点一个范例，看看 AI 怎么分析不同类型的内容</p>
+        <div className="grid grid-cols-2 gap-3">
+          {demoOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleShowDemo(opt.value)}
+              className={`group relative bg-danmaku-surface border border-white/10 rounded-xl p-4 text-left hover:border-white/30 transition-all cursor-pointer hover:-translate-y-0.5`}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{opt.icon}</span>
+                <span className="text-sm font-semibold text-danmaku-text group-hover:text-white transition-colors">
+                  {opt.label}
+                </span>
+              </div>
+              <div className="text-xs text-danmaku-muted">{opt.sub}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Type selector */}

@@ -34,7 +34,7 @@ interface AppState {
   setStatus: (s: AnalysisStatus) => void
   setResult: (r: AnalysisResult) => void
   setError: (e: string | null) => void
-  loadSampleResult: (content: string) => void
+  loadSampleResult: (content: string, contentType: ContentType) => void
   reset: () => void
 }
 
@@ -86,10 +86,16 @@ export const useAppStore = create<AppState>((set) => ({
   setStatus: (status) => set({ status }),
   setResult: (result) => set({ result, status: 'success', error: null }),
   setError: (error) => set({ error, status: 'error' }),
-  loadSampleResult: async (content) => {
-    set({ status: 'loading', content })
-    const { default: data } = await import('../data/sampleResult.json')
-    set({ result: data as AnalysisResult, status: 'success', error: null, isSampleMode: true })
+  loadSampleResult: async (content, contentType) => {
+    set({ status: 'loading', content, contentType })
+    const modules: Record<ContentType, () => Promise<{ default: AnalysisResult }>> = {
+      chat: () => import('../data/sampleResultChat.json'),
+      diary: () => import('../data/sampleResultDiary.json'),
+      voice: () => import('../data/sampleResultVoice.json'),
+      social: () => import('../data/sampleResultSocial.json'),
+    }
+    const { default: data } = await modules[contentType]()
+    set({ result: data, status: 'success', error: null, isSampleMode: true, contentType })
   },
   reset: () => set({ status: 'idle', result: null, error: null, isSampleMode: false }),
 }))
