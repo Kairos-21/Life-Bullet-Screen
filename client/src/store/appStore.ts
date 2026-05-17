@@ -97,5 +97,5 @@ export const useAppStore = create<AppState>((set) => ({
     const { default: data } = await modules[contentType]()
     set({ result: data, status: 'success', error: null, isSampleMode: true, contentType })
   },
-  reset: () => set({ status: 'idle', result: null, error: null, isSampleMode: false }),
+  reset: () => set({ status: 'idle', result: null, error: null, isSampleMode: false, content: '' }),
 }))
