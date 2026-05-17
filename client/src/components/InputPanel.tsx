@@ -61,7 +61,13 @@ export default function InputPanel() {
     <div className="w-full max-w-2xl mx-auto px-4">
       {/* Demo grid */}
       <div className="text-center mb-4">
-        <p className="text-xs text-danmaku-muted mb-3">点一个范例，看看 AI 怎么分析不同类型的内容</p>
+        <p className="text-xs text-danmaku-muted mb-1">
+          点一个范例，看看 AI 怎么分析不同类型的内容
+        </p>
+        <p className="text-xs text-danmaku-muted/60 mb-3">
+          范例由 <span className="text-danmaku-gold/80">DeepSeek</span> 模型通过 API 生成，效果优于浏览器的免费基础分析（轻量模型，能力有限）。
+          需要同等质量？切换「深度分析」模式，填入你的 API Key。
+        </p>
         <div className="grid grid-cols-2 gap-3">
           {demoOptions.map((opt) => (
             <button
