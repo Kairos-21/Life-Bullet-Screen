@@ -29,7 +29,7 @@ interface SpeechRecognition extends EventTarget {
 const typeOptions: { value: ContentType; label: string; icon: string }[] = [
   { value: 'chat', label: '微信聊天', icon: '💬' },
   { value: 'diary', label: '日记', icon: '📝' },
-  { value: 'voice', label: '语音转文字', icon: '🎙️' },
+  { value: 'voice', label: '语音碎碎念', icon: '🎙️' },
   { value: 'social', label: '朋友圈', icon: '📱' },
 ]
 
@@ -184,7 +184,15 @@ export default function InputPanel() {
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="在这里粘贴你的文字...&#10;&#10;支持：聊天记录 / 日记 / 语音转文字 / 朋友圈"
+        placeholder={
+          contentType === 'voice'
+            ? "点右下角麦克风，说出你当下的真实想法...\n\n不用组织语言，想到什么说什么，深夜说不出口的话，这里都接得住。"
+            : contentType === 'chat'
+              ? "在这里粘贴你的聊天记录...\n\n支持：微信 / QQ / 其他聊天应用"
+              : contentType === 'diary'
+                ? "在这里写或粘贴你的日记..."
+                : "在这里粘贴你的朋友圈内容..."
+        }
         rows={10}
         className="w-full bg-danmaku-surface border border-white/10 rounded-xl p-4 text-danmaku-text placeholder-danmaku-muted/50 resize-none focus:outline-none focus:border-danmaku-accent/50 transition-colors text-sm leading-relaxed"
       />
