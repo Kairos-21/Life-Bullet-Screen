@@ -1,5 +1,30 @@
+import { useState, useRef, useCallback } from 'react'
 import { useAppStore } from '../store/appStore'
 import type { ContentType } from '../services/ai-providers/types'
+
+// Web Speech API type declarations
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList
+  resultIndex: number
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition
+    webkitSpeechRecognition: new () => SpeechRecognition
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onresult: (event: SpeechRecognitionEvent) => void
+  onerror: (event: Event) => void
+  onend: () => void
+  start: () => void
+  stop: () => void
+}
 
 const typeOptions: { value: ContentType; label: string; icon: string }[] = [
   { value: 'chat', label: '微信聊天', icon: '💬' },
@@ -42,9 +67,59 @@ export default function InputPanel() {
   const setContentType = useAppStore((s) => s.setContentType)
   const loadSampleResult = useAppStore((s) => s.loadSampleResult)
 
+  const [isRecording, setIsRecording] = useState(false)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
+
   const fillSample = () => {
     setContent(sampleTexts[contentType])
   }
+
+  const startRecording = useCallback(() => {
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognitionCtor) {
+      alert('当前浏览器不支持语音识别，请使用 Chrome 或 Edge')
+      return
+    }
+
+    const recognition = new SpeechRecognitionCtor()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'zh-CN'
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interim = ''
+      let final = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i]
+        if (result.isFinal) {
+          final += result[0].transcript
+        } else {
+          interim += result[0].transcript
+        }
+      }
+      if (final) {
+        setContent(content + (content ? '\n' : '') + final)
+      }
+    }
+
+    recognition.onerror = () => {
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsRecording(true)
+    setContentType('voice')
+  }, [content, setContent, setContentType])
+
+  const stopRecording = useCallback(() => {
+    recognitionRef.current?.stop()
+    setIsRecording(false)
+  }, [])
 
   const demoOptions = [
     { value: 'chat' as ContentType, label: '聊天', sub: '打工人夜话', icon: '💬', color: 'from-cyan-500 to-blue-500' },
@@ -114,15 +189,46 @@ export default function InputPanel() {
         className="w-full bg-danmaku-surface border border-white/10 rounded-xl p-4 text-danmaku-text placeholder-danmaku-muted/50 resize-none focus:outline-none focus:border-danmaku-accent/50 transition-colors text-sm leading-relaxed"
       />
 
-      {/* Sample fill + char count */}
+      {/* Voice input + sample fill + char count */}
       <div className="flex justify-between items-center mt-2 text-xs text-danmaku-muted">
-        <button
-          onClick={fillSample}
-          className="underline hover:text-danmaku-text transition-colors cursor-pointer"
-        >
-          填充示例内容试试
-        </button>
-        <span>{content.length} 字</span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fillSample}
+            className="underline hover:text-danmaku-text transition-colors cursor-pointer"
+          >
+            填充示例内容试试
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Recording indicator */}
+          {isRecording && (
+            <span className="flex items-center gap-1.5 text-danmaku-accent">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danmaku-accent opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-danmaku-accent" />
+              </span>
+              录音中...
+            </span>
+          )}
+          <span>{content.length} 字</span>
+          {/* Mic button */}
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              isRecording
+                ? 'bg-danmaku-accent text-white shadow-lg shadow-danmaku-accent/40'
+                : 'bg-danmaku-surface border border-white/10 text-danmaku-muted hover:text-white hover:border-white/30'
+            }`}
+            title={isRecording ? '停止录音' : '开始语音输入'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   )
