@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --color-danmaku-bg: #0a0a0f;
+  --color-danmaku-surface: #1a1a2e;
+  --color-danmaku-accent: #e94560;
+  --color-danmaku-gold: #f5c518;
+  --color-danmaku-text: #eaeaea;
+  --color-danmaku-muted: #8888aa;
+}
+
+body {
+  margin: 0;
+  background: var(--color-danmaku-bg);
+  color: var(--color-danmaku-text);
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Staggered card entrance */
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger {
+  opacity: 0;
+  animation: stagger-in 0.6s ease-out forwards;
+}
+
+/* Dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-danmaku-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
