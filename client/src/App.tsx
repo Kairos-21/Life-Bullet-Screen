@@ -44,14 +44,20 @@ export default function App() {
                 <AnalyzeButton />
               </>
             )}
-            {/* Collapse hint when results are shown but not yet collapsed */}
+            {/* Action bar when results are shown but input is expanded */}
             {hasResult && (
-              <div className="text-center">
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={handleBack}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-danmaku-text hover:bg-white/20 border border-white/10 transition-all cursor-pointer"
+                >
+                  ← 返回输入
+                </button>
                 <button
                   onClick={() => setInputCollapsed(true)}
                   className="text-xs text-danmaku-muted hover:text-danmaku-text transition-colors cursor-pointer"
                 >
-                 收起输入区 ↑
+                  收起输入区 ↑
                 </button>
               </div>
             )}
@@ -74,9 +80,9 @@ export default function App() {
               <span className="text-xs text-danmaku-muted">展开修改 ↓</span>
               <button
                 onClick={(e) => { e.stopPropagation(); handleBack() }}
-                className="text-xs px-2 py-1 rounded bg-white/10 text-danmaku-muted hover:text-white hover:bg-white/20 transition-colors cursor-pointer"
+                className="text-xs px-2 py-1 rounded bg-danmaku-accent/30 text-danmaku-accent hover:bg-danmaku-accent/50 transition-colors cursor-pointer"
               >
-                清除重来
+                ← 返回输入
               </button>
             </div>
           </div>
