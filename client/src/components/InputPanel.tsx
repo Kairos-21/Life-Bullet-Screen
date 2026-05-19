@@ -167,7 +167,7 @@ export default function InputPanel() {
         {typeOptions.map((opt) => (
           <button
             key={opt.value}
-            onClick={() => setContentType(opt.value)}
+            onClick={() => { setContentType(opt.value); setContent('') }}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
               contentType === opt.value
                 ? 'bg-danmaku-accent text-white shadow-lg shadow-danmaku-accent/30'
