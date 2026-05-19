@@ -20,6 +20,8 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
     const visited = localStorage.getItem(HAS_VISITED_KEY)
     if (!visited) {
       setVisible(true)
+    } else {
+      onEnter()
     }
   }, [])
 
