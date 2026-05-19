@@ -47,8 +47,8 @@ body::after {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, var(--mood-blob-top), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 80%, var(--mood-blob-bottom), transparent);
+    radial-gradient(ellipse 120% 80% at 50% -20%, var(--mood-blob-top), transparent),
+    radial-gradient(ellipse 100% 60% at 80% 80%, var(--mood-blob-bottom), transparent);
   pointer-events: none;
   z-index: 0;
   opacity: 0;
