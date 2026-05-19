@@ -206,6 +206,9 @@ function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: numb
   )
 }
 
+const positiveWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '轻松', '满足', '笑', '爱', '美']
+const emotionWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '孤独', '难过', '害怕', '焦虑', '迷茫', '疲惫']
+
 export default function WordCloud() {
   const result = useAppStore((s) => s.result)
   const words = result?.wordCloud || []
@@ -216,15 +219,34 @@ export default function WordCloud() {
     return Math.max(...words.map((w) => w.weight), 1)
   }, [words])
 
+  const topWords = useMemo(() => {
+    return [...words].sort((a, b) => b.weight - a.weight).slice(0, 3).map(w => w.text)
+  }, [words])
+
+  const missingWord = useMemo(() => {
+    const existingTexts = new Set(words.map(w => w.text))
+    const missing = emotionWords.find(w => !existingTexts.has(w) && !existingTexts.has(w + '的'))
+    if (missing) return missing
+    const missingPositive = positiveWords.find(w => !existingTexts.has(w))
+    return missingPositive || null
+  }, [words])
+
   if (!words.length) return null
 
   return (
     <div className="bg-danmaku-surface border border-white/10 rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-danmaku-text">
-          <span className="text-danmaku-gold mr-1">◆</span>
-          人设词云
-        </h3>
+        <div>
+          <h3 className="text-sm font-semibold text-danmaku-text">
+            <span className="text-danmaku-gold mr-1">◆</span>
+            人设词云
+          </h3>
+          {topWords.length >= 2 && (
+            <p className="text-xs text-danmaku-muted/60 mt-0.5">
+              你最近的关键词是 <span className="text-danmaku-text-dim">{topWords.join('、')}</span>
+            </p>
+          )}
+        </div>
         <div className="flex gap-1">
           {styleOptions.map((opt) => (
             <button
@@ -261,6 +283,13 @@ export default function WordCloud() {
           </motion.div>
         </AnimatePresence>
       </div>
+      {missingWord && (
+        <div className="px-4 py-2 border-t border-white/5 text-right">
+          <span className="text-xs text-danmaku-muted/35 italic">
+            你从来没有提到过：{missingWord}
+          </span>
+        </div>
+      )}
     </div>
   )
 }
