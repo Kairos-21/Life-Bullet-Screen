@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAppStore } from './store/appStore'
 import WelcomeOverlay from './components/WelcomeOverlay'
 import Header from './components/Header'
@@ -11,6 +11,7 @@ import DanmakuView from './components/DanmakuView'
 import WordCloud from './components/WordCloud'
 import DiagnosisReport from './components/DiagnosisReport'
 import MovieScene from './components/MovieScene'
+import { getMoodColors, neutral } from './utils/moodBackground'
 
 const stagger = 'animate-stagger'
 
@@ -56,6 +57,22 @@ export default function App() {
     if (!result?.diagnosis?.mood) return null
     return getFarewell(result.diagnosis.mood)
   }, [result])
+
+  const mood = result?.diagnosis?.mood ?? null
+
+  useEffect(() => {
+    if (hasResult && status === 'success' && mood) {
+      const colors = getMoodColors(mood)
+      document.body.style.setProperty('--mood-blob-top', colors?.blobTop ?? neutral.blobTop)
+      document.body.style.setProperty('--mood-blob-bottom', colors?.blobBottom ?? neutral.blobBottom)
+      document.body.classList.add('mood-bg-active')
+    } else {
+      document.body.classList.remove('mood-bg-active')
+    }
+    return () => {
+      document.body.classList.remove('mood-bg-active')
+    }
+  }, [hasResult, status, mood])
 
   const handleBack = () => {
     reset()
