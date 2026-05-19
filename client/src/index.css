@@ -6,7 +6,15 @@
   --color-danmaku-accent: #e94560;
   --color-danmaku-gold: #f5c518;
   --color-danmaku-text: #eaeaea;
+  --color-danmaku-text-dim: #c0c0d0;
   --color-danmaku-muted: #8888aa;
+  --color-danmaku-soft: #c8b6ff;
+  --color-danmaku-warm: #ffe0c0;
+  --color-danmaku-accent-soft: #ff8a9e;
+  --color-danmaku-surface-raised: #1e1e36;
+  --color-danmaku-surface-overlay: #252540;
+  --color-danmaku-border: rgba(255, 255, 255, 0.08);
+  --color-danmaku-border-hover: rgba(255, 255, 255, 0.15);
 }
 
 body {
@@ -15,10 +23,46 @@ body {
   color: var(--color-danmaku-text);
   font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  --mood-blob-top: rgba(233, 69, 96, 0.04);
+  --mood-blob-bottom: rgba(245, 197, 24, 0.03);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(233, 69, 96, 0.04), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 197, 24, 0.03), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, var(--mood-blob-top), transparent),
+    radial-gradient(ellipse 100% 60% at 80% 80%, var(--mood-blob-bottom), transparent);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+body.mood-bg-active::after {
+  opacity: 1;
 }
 
 #root {
   min-height: 100vh;
+  position: relative;
+  z-index: 1;
 }
 
 /* Staggered card entrance */

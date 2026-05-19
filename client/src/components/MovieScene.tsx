@@ -14,7 +14,7 @@ export default function MovieScene() {
     try {
       const dataUrl = await toPng(cardRef.current, { backgroundColor: '#0a0a0f' })
       const link = document.createElement('a')
-      link.download = '电影场景卡.png'
+      link.download = '我的剧照.png'
       link.href = dataUrl
       link.click()
     } catch {
@@ -33,56 +33,65 @@ export default function MovieScene() {
           onClick={handleExport}
           className="text-xs text-danmaku-muted hover:text-danmaku-text transition-colors cursor-pointer"
         >
-          保存图片
+          保存这张剧照
         </button>
       </div>
       <div
         ref={cardRef}
-        className="p-6 space-y-4"
+        className="relative overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #0a0a0f 0%, #16213e 50%, #1a1a2e 100%)',
         }}
       >
-        {/* Cinematic letterbox */}
-        <div className="relative">
-          <div className="h-1 bg-black/50 -mx-6" />
-          <div className="py-6 px-4 space-y-4">
-            {/* Genre tag */}
-            <div className="text-center">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-danmaku-gold/20 text-danmaku-gold border border-danmaku-gold/30">
-                {scene.genre}
-              </span>
+        {/* Projector glow */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center top, rgba(245,197,24,0.06) 0%, transparent 70%)',
+          }}
+        />
+
+        {/* Top letterbox */}
+        <div className="h-3 bg-black/60" />
+
+        <div className="py-8 px-6 space-y-5">
+          {/* Genre tag */}
+          <div className="text-center">
+            <span className="inline-block px-4 py-1 rounded-full text-xs font-bold bg-danmaku-gold/20 text-danmaku-gold border border-danmaku-gold/30 tracking-wider">
+              {scene.genre}
+            </span>
+          </div>
+
+          {/* Scene description */}
+          <p className="text-sm text-danmaku-text leading-relaxed italic border-l-2 border-danmaku-gold/40 pl-5">
+            {scene.sceneDescription}
+          </p>
+
+          {/* Details */}
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="bg-white/5 rounded-lg p-3">
+              <div className="text-danmaku-muted mb-1">推荐 BGM</div>
+              <div className="text-danmaku-text font-medium">{scene.bgm}</div>
             </div>
-
-            {/* Scene description */}
-            <p className="text-sm text-danmaku-text leading-relaxed italic border-l-2 border-danmaku-gold/50 pl-4">
-              {scene.sceneDescription}
-            </p>
-
-            {/* Details grid */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="text-danmaku-muted mb-1">推荐 BGM</div>
-                <div className="text-danmaku-text font-medium">{scene.bgm}</div>
-              </div>
-              <div className="bg-white/5 rounded-lg p-3">
-                <div className="text-danmaku-muted mb-1">色调</div>
-                <div className="text-danmaku-text font-medium">{scene.colorPalette}</div>
-              </div>
-            </div>
-
-            {/* Tagline */}
-            <div className="text-center pt-2">
-              <div className="text-xs text-danmaku-muted mb-1">— 这一幕的标语 —</div>
-              <div className="text-lg font-bold text-danmaku-gold italic">"{scene.tagline}"</div>
+            <div className="bg-white/5 rounded-lg p-3">
+              <div className="text-danmaku-muted mb-1">色调</div>
+              <div className="text-danmaku-text font-medium">{scene.colorPalette}</div>
             </div>
           </div>
-          <div className="h-1 bg-black/50 -mx-6" />
+
+          {/* Tagline */}
+          <div className="text-center pt-3">
+            <div className="text-xs text-danmaku-muted mb-1">— 这一幕的标语 —</div>
+            <div className="text-xl font-bold text-danmaku-gold italic leading-relaxed">"{scene.tagline}"</div>
+          </div>
         </div>
 
+        {/* Bottom letterbox */}
+        <div className="h-3 bg-black/60" />
+
         {/* Cinema footer */}
-        <div className="text-center text-xs text-danmaku-muted/60">
-          DIRECTOR: LIFE · CINEMATOGRAPHER: AI · FILTER: YOUR WORDS
+        <div className="text-center py-3 text-xs text-danmaku-muted/40 tracking-widest">
+          DIRECTOR: LIFE &nbsp;·&nbsp; CINEMATOGRAPHER: AI &nbsp;·&nbsp; FILTER: YOUR WORDS
         </div>
       </div>
     </div>
