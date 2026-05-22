@@ -2,118 +2,134 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 const questions = [
-  '今天，你跟自己说了什么？',
-  '还在加班吗？',
-  '多久没跟自己聊聊了？',
-  '深夜了，你在想什么？',
-  '最近一次感到被理解是什么时候？',
-  '如果今天是一部电影，你会给它取什么名字？',
+  '今天，脑子里有没有一句没法发出去的话？',
+  '深夜里最先浮起来的那个念头，还在吗？',
+  '如果今天只能留下一句弹幕，你想写什么？',
+  '有没有一句话，你假装已经忘了？',
 ]
 
-const HAS_VISITED_KEY = 'danmaku_has_visited'
+const subtitles = [
+  '那些没发出去的话，也算说过。',
+  '有些情绪不用整理，也值得被接住。',
+  '不是每一种念头，都要解释给别人听。',
+]
 
 export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
   const [question] = useState(() => questions[Math.floor(Math.random() * questions.length)])
+  const [subtitle] = useState(() => subtitles[Math.floor(Math.random() * subtitles.length)])
 
   useEffect(() => {
-    const visited = localStorage.getItem(HAS_VISITED_KEY)
-    if (!visited) {
-      setVisible(true)
-    } else {
-      onEnter()
-    }
+    setVisible(true)
   }, [])
 
   const handleEnter = () => {
-    localStorage.setItem(HAS_VISITED_KEY, 'true')
     setVisible(false)
-    onEnter()
+    window.setTimeout(() => onEnter(), 380)
   }
 
   if (!visible) return null
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center px-5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{ background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)' }}
+      style={{ background: 'radial-gradient(ellipse at center, #141824 0%, #090a10 100%)' }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[0, 1, 2, 3, 4, 5].map((i) => (
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <motion.div
             key={i}
-            className="absolute w-0.5 h-0.5 rounded-full bg-danmaku-gold/30"
+            className="absolute rounded-full bg-danmaku-gold/20"
             style={{
-              left: `${10 + i * 17}%`,
-              top: `${15 + (i * 23) % 70}%`,
+              width: i % 2 === 0 ? 4 : 2,
+              height: i % 2 === 0 ? 4 : 2,
+              left: `${8 + i * 13}%`,
+              top: `${12 + (i * 17) % 72}%`,
             }}
-            animate={{ opacity: [0, 0.6, 0], scale: [1, 2, 1] }}
+            animate={{ opacity: [0.05, 0.55, 0.08], scale: [1, 1.8, 1] }}
             transition={{
-              duration: 3 + i * 1.5,
+              duration: 4.6 + i * 1.1,
               repeat: Infinity,
-              delay: i * 0.8,
+              delay: i * 0.55,
+              ease: 'easeInOut',
             }}
           />
         ))}
       </div>
 
       <motion.div
-        className="text-center px-8 max-w-sm"
-        initial={{ y: 20, opacity: 0 }}
+        className="welcome-stage text-center"
+        initial={{ y: 18, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
+        transition={{ delay: 0.2, duration: 0.85, ease: 'easeOut' }}
       >
         <motion.p
-          className="text-2xl font-bold text-danmaku-text mb-2 leading-relaxed"
+          className="text-[11px] uppercase tracking-[0.38em] text-danmaku-muted/46"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
+          transition={{ delay: 0.55, duration: 0.65 }}
         >
-          人生弹幕机
+          Life Danmaku Machine
+        </motion.p>
+
+        <motion.h1
+          className="mt-6 text-[clamp(3rem,9vw,7rem)] font-semibold tracking-[0.14em] leading-[0.9]"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.75, duration: 0.75 }}
+        >
+          <span className="text-danmaku-accent">人生</span>
+          <span className="text-danmaku-gold">弹幕</span>
+          <span className="text-white">机</span>
+        </motion.h1>
+
+        <motion.p
+          className="mx-auto mt-8 max-w-3xl welcome-stage-quote text-[clamp(1.6rem,4vw,3.4rem)] leading-[1.22] text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.05, duration: 0.8 }}
+        >
+          {subtitle}
         </motion.p>
 
         <motion.p
-          className="text-sm text-danmaku-muted mb-3"
+          className="mx-auto mt-7 max-w-2xl text-base leading-8 text-danmaku-text-dim/78 sm:text-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.6 }}
-        >
-          把你的聊天记录、日记、深夜碎碎念
-          <br />
-          变成别人眼里的你
-        </motion.p>
-
-        <motion.p
-          className="text-lg text-danmaku-text font-medium mb-10 leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
+          transition={{ delay: 1.45, duration: 0.8 }}
         >
           {question}
         </motion.p>
 
+        <motion.div
+          className="mx-auto mt-12 h-px w-28 bg-gradient-to-r from-transparent via-white/28 to-transparent"
+          initial={{ opacity: 0, scaleX: 0.5 }}
+          animate={{ opacity: 1, scaleX: 1 }}
+          transition={{ delay: 1.9, duration: 0.8 }}
+        />
+
         <motion.button
           onClick={handleEnter}
-          className="px-10 py-3 rounded-full text-sm font-medium bg-danmaku-accent/20 text-danmaku-accent-soft border border-danmaku-accent/30 hover:bg-danmaku-accent/30 hover:border-danmaku-accent/50 transition-all cursor-pointer"
+          className="mt-10 rounded-full border border-danmaku-accent/30 bg-danmaku-accent/18 px-10 py-3 text-sm font-medium text-danmaku-accent-soft transition-all hover:bg-danmaku-accent/28 hover:border-danmaku-accent/52 cursor-pointer"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2, duration: 0.6 }}
+          transition={{ delay: 2.15, duration: 0.65 }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          开始写下或粘贴最近的心情
+          今晚先留下一句
         </motion.button>
 
         <motion.p
-          className="text-xs text-danmaku-muted/30 mt-6"
+          className="mt-6 text-xs text-danmaku-muted/34"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2.4 }}
+          transition={{ delay: 2.45, duration: 0.7 }}
         >
-          你的文字只保存在你的浏览器里
+          你的文字只停留在你的浏览器里
         </motion.p>
       </motion.div>
     </motion.div>

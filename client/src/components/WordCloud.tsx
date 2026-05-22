@@ -5,9 +5,9 @@ import { useAppStore } from '../store/appStore'
 type WordStyle = 'particles' | 'bubbles' | 'galaxy'
 
 const styleOptions: { value: WordStyle; label: string; icon: string }[] = [
-  { value: 'particles', label: '粒子漂浮', icon: '✨' },
-  { value: 'bubbles', label: '标签气泡', icon: '🫧' },
-  { value: 'galaxy', label: '银河星图', icon: '🌌' },
+  { value: 'particles', label: '粒子散落', icon: '✦' },
+  { value: 'bubbles', label: '词语气泡', icon: '◌' },
+  { value: 'galaxy', label: '词语掠影', icon: '☄' },
 ]
 
 const COLORS = [
@@ -16,62 +16,228 @@ const COLORS = [
   '#81ecec', '#ff9ff3', '#54a0ff', '#5f27cd',
 ]
 
+interface ParticlePlacement {
+  text: string
+  weight: number
+  size: number
+  left: number
+  top: number
+  duration: number
+  delay: number
+  color: string
+}
+
+interface GalaxyPlacement {
+  text: string
+  weight: number
+  size: number
+  laneX: number
+  startY: number
+  endY: number
+  sway: number
+  duration: number
+  delay: number
+  color: string
+  opacity: number
+  blur: number
+}
+
+function estimateWordWidth(text: string, fontSize: number) {
+  const wideChars = Array.from(text).reduce((count, char) => count + (/[\u4e00-\u9fff]/.test(char) ? 1 : 0), 0)
+  const narrowChars = text.length - wideChars
+  return wideChars * fontSize * 1.05 + narrowChars * fontSize * 0.62
+}
+
+function buildParticlePlacements(words: { text: string; weight: number }[], maxWeight: number): ParticlePlacement[] {
+  const placements: ParticlePlacement[] = []
+  const width = 820
+  const height = 288
+  const padding = 20
+  const anchors = [
+    { x: 0.12, y: 0.2 },
+    { x: 0.32, y: 0.18 },
+    { x: 0.52, y: 0.18 },
+    { x: 0.72, y: 0.2 },
+    { x: 0.88, y: 0.24 },
+    { x: 0.16, y: 0.48 },
+    { x: 0.34, y: 0.46 },
+    { x: 0.52, y: 0.5 },
+    { x: 0.7, y: 0.48 },
+    { x: 0.88, y: 0.5 },
+    { x: 0.12, y: 0.76 },
+    { x: 0.3, y: 0.78 },
+    { x: 0.5, y: 0.8 },
+    { x: 0.7, y: 0.76 },
+    { x: 0.86, y: 0.74 },
+  ]
+  const anchorOrder = [7, 1, 8, 5, 9, 11, 3, 13, 0, 4, 12, 6, 10, 2, 14]
+
+  const sortedWords = [...words].sort((a, b) => b.weight - a.weight)
+
+  for (let i = 0; i < sortedWords.length; i++) {
+    const word = sortedWords[i]
+    const size = 14 + (word.weight / maxWeight) * 34
+    const wordWidth = estimateWordWidth(word.text, size)
+    const wordHeight = size * 1.45
+
+    const preferredAnchor = anchors[anchorOrder[i % anchorOrder.length]]
+    let chosenLeft = padding
+    let chosenTop = padding
+    let bestScore = Number.NEGATIVE_INFINITY
+
+    for (let attempt = 0; attempt < 220; attempt++) {
+      const anchor =
+        attempt < 110
+          ? preferredAnchor
+          : anchors[(anchorOrder[(i + attempt) % anchorOrder.length] + attempt) % anchors.length]
+      const spreadX = attempt < 110 ? 58 : 92
+      const spreadY = attempt < 110 ? 38 : 64
+      const seededA = (((i + 1) * 131 + attempt * 59) % 1000) / 1000
+      const seededB = (((i + 1) * 197 + attempt * 43) % 1000) / 1000
+      const left = Math.min(
+        width - wordWidth - padding,
+        Math.max(
+          padding,
+          anchor.x * width - wordWidth / 2 + (seededA - 0.5) * spreadX,
+        ),
+      )
+      const top = Math.min(
+        height - wordHeight - padding,
+        Math.max(
+          padding,
+          anchor.y * height - wordHeight / 2 + (seededB - 0.5) * spreadY,
+        ),
+      )
+
+      const overlaps = placements.some((placed) => {
+        const placedWidth = estimateWordWidth(placed.text, placed.size)
+        const placedHeight = placed.size * 1.45
+        return !(
+          left + wordWidth + 14 < placed.left ||
+          placed.left + placedWidth + 14 < left ||
+          top + wordHeight + 10 < placed.top ||
+          placed.top + placedHeight + 10 < top
+        )
+      })
+
+      if (overlaps) continue
+
+      const centerX = left + wordWidth / 2
+      const centerY = top + wordHeight / 2
+      const nearestDistance = placements.reduce((best, placed) => {
+        const placedWidth = estimateWordWidth(placed.text, placed.size)
+        const placedHeight = placed.size * 1.45
+        const placedCenterX = placed.left + placedWidth / 2
+        const placedCenterY = placed.top + placedHeight / 2
+        return Math.min(best, Math.hypot(centerX - placedCenterX, centerY - placedCenterY))
+      }, 999)
+
+      const edgePenalty =
+        Math.max(90 - centerX, 0) * 0.5 +
+        Math.max(centerX - (width - 90), 0) * 0.5 +
+        Math.max(54 - centerY, 0) * 0.7 +
+        Math.max(centerY - (height - 54), 0) * 0.7
+      const verticalBalance = Math.abs(centerY - height / 2) * 0.08
+      const anchorPull =
+        Math.hypot(centerX - preferredAnchor.x * width, centerY - preferredAnchor.y * height) * -0.3
+      const score = nearestDistance - edgePenalty - verticalBalance + anchorPull
+
+      if (score > bestScore) {
+        bestScore = score
+        chosenLeft = left
+        chosenTop = top
+      }
+    }
+
+    placements.push({
+      text: word.text,
+      weight: word.weight,
+      size,
+      left: chosenLeft,
+      top: chosenTop,
+      duration: 3 + (i % 4) * 1.5,
+      delay: i * 0.15,
+      color: COLORS[i % COLORS.length],
+    })
+  }
+
+  return placements
+}
+
+function buildGalaxyPlacements(words: { text: string; weight: number }[], maxWeight: number): GalaxyPlacement[] {
+  const lanes = [0.12, 0.24, 0.36, 0.48, 0.62, 0.76, 0.88]
+  const laneOrder = [3, 1, 5, 0, 6, 2, 4]
+
+  return [...words].sort((a, b) => b.weight - a.weight).map((word, index) => {
+    const ratio = word.weight / maxWeight
+    const lane = lanes[laneOrder[index % laneOrder.length]]
+    const laneOffset = ((((index + 1) * 73) % 100) / 100 - 0.5) * 0.07
+    const laneX = Math.min(0.92, Math.max(0.08, lane + laneOffset))
+    const size = 15 + ratio * 24
+    const sway = 16 + ((index * 13) % 14) + ratio * 10
+
+    return {
+      text: word.text,
+      weight: word.weight,
+      size,
+      laneX,
+      startY: 116 + (index % 4) * 18 + ratio * 10,
+      endY: -20 - ((index * 17) % 48),
+      sway,
+      duration: 10 + (index % 4) * 1.4 - ratio * 1.2,
+      delay: index * 0.58,
+      color: index === 0 ? '#f5c518' : COLORS[index % COLORS.length],
+      opacity: index === 0 ? 1 : 0.58 + ratio * 0.26,
+      blur: index === 0 ? 0 : Math.max(0, 1.8 - ratio * 1.5),
+    }
+  })
+}
+
 function ParticlesCloud({ words, maxWeight }: { words: { text: string; weight: number }[]; maxWeight: number }) {
+  const placements = useMemo(() => buildParticlePlacements(words, maxWeight), [words, maxWeight])
+
   return (
     <div className="relative h-72 overflow-hidden">
-      {words.map((w, i) => {
-        const size = 14 + (w.weight / maxWeight) * 36
-        const x = 10 + (i * 17 + 7) % 78
-        const y = 10 + (i * 23 + 13) % 78
-        const duration = 3 + (i % 4) * 1.5
-        const delay = i * 0.15
-        return (
-          <motion.span
-            key={i}
-            className="absolute font-bold whitespace-nowrap cursor-default select-none"
-            style={{
-              fontSize: `${size}px`,
-              color: COLORS[i % COLORS.length],
-              left: `${x}%`,
-              top: `${y}%`,
-              textShadow: `0 0 12px ${COLORS[i % COLORS.length]}60`,
-            }}
-            initial={{ opacity: 0, scale: 0.3 }}
-            animate={{
-              opacity: [0.55, 0.9, 0.55],
-              y: [0, -12, 0],
-              scale: 1,
-            }}
-            transition={{
-              opacity: { duration, repeat: Infinity, delay, ease: 'easeInOut' },
-              y: { duration: duration + 1, repeat: Infinity, delay, ease: 'easeInOut' },
-              scale: { duration: 0.5, delay: i * 0.08, ease: 'backOut' },
-            }}
-            whileHover={{
-              scale: 1.4,
-              opacity: 1,
-              transition: { duration: 0.2 },
-            }}
-          >
-            {w.text}
-          </motion.span>
-        )
-      })}
+      {placements.map((word, i) => (
+        <motion.span
+          key={`${word.text}-${i}`}
+          className="absolute cursor-default select-none whitespace-nowrap font-bold"
+          style={{
+            fontSize: `${word.size}px`,
+            color: word.color,
+            left: `${(word.left / 820) * 100}%`,
+            top: `${(word.top / 288) * 100}%`,
+            textShadow: `0 0 12px ${word.color}60`,
+          }}
+          initial={{ opacity: 0, scale: 0.3 }}
+          animate={{ opacity: [0.5, 0.88, 0.5], y: [0, -12, 0], scale: 1 }}
+          transition={{
+            opacity: { duration: word.duration, repeat: Infinity, delay: word.delay, ease: 'easeInOut' },
+            y: { duration: word.duration + 1, repeat: Infinity, delay: word.delay, ease: 'easeInOut' },
+            scale: { duration: 0.5, delay: i * 0.08, ease: 'backOut' },
+          }}
+          whileHover={{ scale: 1.18, opacity: 1, transition: { duration: 0.2 } }}
+        >
+          {word.text}
+        </motion.span>
+      ))}
     </div>
   )
 }
 
 function BubblesCloud({ words, maxWeight }: { words: { text: string; weight: number }[]; maxWeight: number }) {
   return (
-    <div className="flex flex-wrap justify-center items-center gap-3 p-4 min-h-72 content-center">
+    <div className="flex min-h-72 flex-wrap content-center items-center justify-center gap-3 p-4">
       {words.map((w, i) => {
         const ratio = w.weight / maxWeight
         const size = 13 + ratio * 28
         const alpha = 0.55 + ratio * 0.45
+        const driftX = ((i % 5) - 2) * (3 + ratio * 5)
+        const driftY = ((i % 4) - 1.5) * (2 + ratio * 4)
         return (
           <motion.span
             key={i}
-            className="inline-block font-bold rounded-full px-4 py-1.5 cursor-default select-none border"
+            className="inline-block cursor-default select-none rounded-full border px-4 py-1.5 font-bold"
             style={{
               fontSize: `${size}px`,
               color: ratio > 0.6 ? '#fff' : COLORS[i % COLORS.length],
@@ -81,8 +247,18 @@ function BubblesCloud({ words, maxWeight }: { words: { text: string; weight: num
               opacity: alpha,
             }}
             initial={{ opacity: 0, y: 20, scale: 0.6 }}
-            animate={{ opacity: alpha, y: 0, scale: 1 }}
-            transition={{ duration: 0.4, delay: i * 0.06, ease: 'easeOut' }}
+            animate={{
+              opacity: [alpha * 0.78, alpha, alpha * 0.82],
+              x: [0, driftX, 0, -driftX * 0.65, 0],
+              y: [0, -10 + driftY, -4, -12 - driftY * 0.35, 0],
+              scale: [1, 1.04, 1, 0.985, 1],
+            }}
+            transition={{
+              opacity: { duration: 4.8 + (i % 3), delay: i * 0.08, repeat: Infinity, ease: 'easeInOut' },
+              x: { duration: 9 + (i % 4) * 1.2, delay: i * 0.05, repeat: Infinity, ease: 'easeInOut' },
+              y: { duration: 7.8 + (i % 5), delay: i * 0.06, repeat: Infinity, ease: 'easeInOut' },
+              scale: { duration: 6.6 + (i % 4), delay: i * 0.05, repeat: Infinity, ease: 'easeInOut' },
+            }}
             whileHover={{
               scale: 1.25,
               opacity: 1,
@@ -98,115 +274,55 @@ function BubblesCloud({ words, maxWeight }: { words: { text: string; weight: num
   )
 }
 
-function OrbitRing({ words, radius, duration, reverse, maxWeight }: {
-  words: { text: string; weight: number }[]
-  radius: number
-  duration: number
-  reverse: boolean
-  maxWeight: number
-}) {
+function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: number }[]; maxWeight: number }) {
+  const placements = useMemo(() => buildGalaxyPlacements(words, maxWeight), [words, maxWeight])
+
   return (
-    <motion.div
-      className="absolute"
-      style={{
-        width: `${radius * 2}px`,
-        height: `${radius * 2}px`,
-        left: `calc(50% - ${radius}px)`,
-        top: `calc(50% - ${radius}px)`,
-      }}
-      animate={{ rotate: reverse ? -360 : 360 }}
-      transition={{ duration, repeat: Infinity, ease: 'linear' }}
-    >
-      {words.map((w, i) => {
-        const angle = (i / words.length) * Math.PI * 2 - Math.PI / 2
-        const size = 12 + (w.weight / maxWeight) * 16
-        const x = Math.cos(angle) * radius
-        const y = Math.sin(angle) * radius
-        return (
+    <div className="relative h-80 overflow-hidden bg-[radial-gradient(circle_at_50%_68%,rgba(44,54,92,0.34)_0%,rgba(15,17,28,0.96)_50%,rgba(8,9,14,1)_100%)]">
+      <div className="absolute inset-x-0 bottom-[-18%] h-[72%] bg-[radial-gradient(ellipse_at_center,rgba(83,216,251,0.13)_0%,rgba(83,216,251,0.04)_30%,rgba(8,9,14,0)_75%)] blur-2xl" />
+      <div className="absolute inset-x-0 bottom-[-8%] h-[60%] bg-[radial-gradient(ellipse_at_center,rgba(245,197,24,0.14)_0%,rgba(245,197,24,0.04)_26%,rgba(8,9,14,0)_72%)] blur-3xl" />
+      <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(8,9,14,0)_0%,rgba(8,9,14,0.82)_72%,rgba(8,9,14,1)_100%)]" />
+      <div className="absolute inset-0">
+        {placements.map((word, index) => (
           <motion.span
-            key={i}
-            className="absolute font-bold cursor-default select-none whitespace-nowrap"
+            key={`${word.text}-${index}`}
+            className="absolute cursor-default select-none whitespace-nowrap font-bold"
             style={{
-              fontSize: `${size}px`,
-              color: COLORS[(i + 1) % COLORS.length],
-              textShadow: `0 0 8px ${COLORS[(i + 1) % COLORS.length]}40`,
-              left: `calc(50% + ${x}px)`,
-              top: `calc(50% + ${y}px)`,
+              fontSize: `${word.size}px`,
+              color: word.color,
+              left: `${word.laneX * 100}%`,
+              bottom: `-${word.startY}px`,
+              opacity: word.opacity,
+              filter: `blur(${word.blur}px)`,
+              textShadow: word.color === '#f5c518'
+                ? '0 0 18px #f5c51872, 0 0 42px #f5c5182e'
+                : `0 0 10px ${word.color}36`,
               transform: 'translate(-50%, -50%)',
             }}
-            initial={{ opacity: 0 }}
+            initial={{ opacity: 0, scale: 0.74 }}
             animate={{
-              opacity: 1,
-              rotate: reverse ? 360 : -360,
+              opacity: [0, word.opacity * 0.62, word.opacity, word.opacity * 0.4, 0],
+              y: [0, -112, -248, -392],
+              x: [0, word.sway, -word.sway * 0.7, word.sway * 0.35],
+              scale: [0.74, 0.92, 1.06, 1.14],
             }}
             transition={{
-              opacity: { duration: 0.5, delay: i * 0.12 + 0.3 },
-              rotate: { duration, repeat: Infinity, ease: 'linear' },
+              opacity: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeInOut' },
+              x: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeInOut' },
+              y: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeOut' },
+              scale: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeOut' },
             }}
-            whileHover={{ scale: 1.6, opacity: 1, transition: { duration: 0.15 } }}
+            whileHover={{ scale: 1.08, opacity: 1, transition: { duration: 0.2 } }}
           >
-            {w.text}
+            {word.text}
           </motion.span>
-        )
-      })}
-    </motion.div>
-  )
-}
-
-function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: number }[]; maxWeight: number }) {
-  const center = words[0]
-  const mid = Math.ceil((words.length - 1) / 2)
-  const innerWords = words.slice(1, 1 + mid)
-  const outerWords = words.slice(1 + mid)
-
-  return (
-    <div className="relative h-80 flex items-center justify-center overflow-hidden">
-      {/* Orbit trace rings */}
-      <motion.div
-        className="absolute rounded-full border border-danmaku-accent/20"
-        style={{ width: 180, height: 180 }}
-        animate={{ rotate: 360, borderColor: ['rgba(233,69,96,0.25)', 'rgba(233,69,96,0.08)', 'rgba(233,69,96,0.25)'] }}
-        transition={{ rotate: { duration: 20, repeat: Infinity, ease: 'linear' }, borderColor: { duration: 3, repeat: Infinity, ease: 'easeInOut' } }}
-      />
-      <motion.div
-        className="absolute rounded-full border border-danmaku-gold/15"
-        style={{ width: 260, height: 260 }}
-        animate={{ rotate: -360, borderColor: ['rgba(245,197,24,0.2)', 'rgba(245,197,24,0.06)', 'rgba(245,197,24,0.2)'] }}
-        transition={{ rotate: { duration: 28, repeat: Infinity, ease: 'linear' }, borderColor: { duration: 4, repeat: Infinity, ease: 'easeInOut' } }}
-      />
-
-      {/* Center word — golden glow */}
-      {center && (
-        <motion.span
-          className="absolute font-bold cursor-default select-none z-10"
-          style={{
-            fontSize: `${24 + (center.weight / maxWeight) * 22}px`,
-            color: '#f5c518',
-            textShadow: '0 0 24px #f5c51880, 0 0 60px #f5c51830',
-          }}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 1, scale: [1, 1.05, 1] }}
-          transition={{ opacity: { duration: 0.5 }, scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' } }}
-          whileHover={{ scale: 1.2 }}
-        >
-          {center.text}
-        </motion.span>
-      )}
-
-      {/* Inner orbit */}
-      {innerWords.length > 0 && (
-        <OrbitRing words={innerWords} radius={90} duration={20} reverse={false} maxWeight={maxWeight} />
-      )}
-
-      {/* Outer orbit */}
-      {outerWords.length > 0 && (
-        <OrbitRing words={outerWords} radius={130} duration={28} reverse={true} maxWeight={maxWeight} />
-      )}
+        ))}
+      </div>
     </div>
   )
 }
 
-const positiveWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '轻松', '满足', '笑', '爱', '美']
+const positiveWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '轻松', '满足', '笑', '爱', '睡']
 const emotionWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '孤独', '难过', '害怕', '焦虑', '迷茫', '疲惫']
 
 export default function WordCloud() {
@@ -220,42 +336,42 @@ export default function WordCloud() {
   }, [words])
 
   const topWords = useMemo(() => {
-    return [...words].sort((a, b) => b.weight - a.weight).slice(0, 3).map(w => w.text)
+    return [...words].sort((a, b) => b.weight - a.weight).slice(0, 3).map((w) => w.text)
   }, [words])
 
   const missingWord = useMemo(() => {
-    const existingTexts = new Set(words.map(w => w.text))
-    const missing = emotionWords.find(w => !existingTexts.has(w) && !existingTexts.has(w + '的'))
+    const existingTexts = new Set(words.map((w) => w.text))
+    const missing = emotionWords.find((w) => !existingTexts.has(w) && !existingTexts.has(`${w}的`))
     if (missing) return missing
-    const missingPositive = positiveWords.find(w => !existingTexts.has(w))
-    return missingPositive || null
+    return positiveWords.find((w) => !existingTexts.has(w)) || null
   }, [words])
 
   if (!words.length) return null
 
   return (
-    <div className="bg-danmaku-surface border border-white/10 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+    <div className="overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(22,20,34,0.98),rgba(10,10,18,0.98))] shadow-[0_24px_70px_rgba(0,0,0,0.24)]">
+      <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.03] px-5 py-4">
         <div>
           <h3 className="text-sm font-semibold text-danmaku-text">
-            <span className="text-danmaku-gold mr-1">◆</span>
+            <span className="mr-2 text-danmaku-gold">✦</span>
             人设词云
           </h3>
           {topWords.length >= 2 && (
-            <p className="text-xs text-danmaku-muted/60 mt-0.5">
-              你最近的关键词是 <span className="text-danmaku-text-dim">{topWords.join('、')}</span>
+            <p className="mt-1 text-xs text-danmaku-muted/58">
+              你最近反复出现的词：<span className="text-danmaku-text-dim">{topWords.join('、')}</span>
             </p>
           )}
         </div>
+
         <div className="flex gap-1">
           {styleOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setStyle(opt.value)}
-              className={`text-xs px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+              className={`rounded-full px-2.5 py-1 text-xs transition-all cursor-pointer ${
                 style === opt.value
-                  ? 'bg-danmaku-accent/20 text-danmaku-accent border border-danmaku-accent/30'
-                  : 'text-danmaku-muted hover:text-danmaku-text-dim border border-transparent'
+                  ? 'border border-danmaku-accent/26 bg-danmaku-accent/16 text-danmaku-accent'
+                  : 'border border-transparent text-danmaku-muted/72 hover:text-danmaku-text-dim'
               }`}
             >
               <span className="mr-1">{opt.icon}</span>
@@ -264,9 +380,10 @@ export default function WordCloud() {
           ))}
         </div>
       </div>
+
       <div
         style={{
-          background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)',
+          background: 'radial-gradient(ellipse at center, rgba(35,26,58,0.44) 0%, rgba(10,11,18,0.98) 70%, rgba(8,9,14,1) 100%)',
         }}
       >
         <AnimatePresence mode="wait">
@@ -283,10 +400,11 @@ export default function WordCloud() {
           </motion.div>
         </AnimatePresence>
       </div>
+
       {missingWord && (
-        <div className="px-4 py-2 border-t border-white/5 text-right">
-          <span className="text-xs text-danmaku-muted/35 italic">
-            你从来没有提到过：{missingWord}
+        <div className="border-t border-white/5 px-5 py-3 text-right">
+          <span className="text-xs italic text-danmaku-muted/34">
+            你很少提到：{missingWord}
           </span>
         </div>
       )}

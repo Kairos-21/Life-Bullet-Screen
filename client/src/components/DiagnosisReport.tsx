@@ -3,35 +3,35 @@ import { toPng } from 'html-to-image'
 import { useAppStore } from '../store/appStore'
 
 const moodEmojiMap: Record<string, string> = {
-  '平和': '🌙',
-  '愉悦': '✨',
-  '积极': '☀️',
-  '疲惫': '🫧',
-  '焦虑': '🌧️',
-  '期待': '🌤️',
-  '迷茫': '🪐',
-  '兴奋': '⚡',
-  '怀旧': '🎞️',
-  '低落': '🌊',
+  平和: '☁️',
+  愉悦: '✨',
+  积极: '☀️',
+  疲惫: '🌙',
+  焦虑: '⚡',
+  期待: '🌠',
+  迷茫: '🪐',
+  兴奋: '🎇',
+  怀旧: '🎞️',
+  低落: '🌧️',
 }
 
 const moodTitles: Record<string, string> = {
-  '平和': '慢慢亮着型',
-  '愉悦': '偷偷开心型',
-  '积极': '还想往前走型',
-  '疲惫': '熟练硬撑型',
-  '焦虑': '脑内多窗口型',
-  '期待': '想发生点什么型',
-  '迷茫': '边走边找方向型',
-  '兴奋': '有火花在冒型',
-  '怀旧': '旧电影回放型',
-  '低落': '轻声下坠型',
+  平和: '慢慢亮着型',
+  愉悦: '偷着开心型',
+  积极: '还想往前走型',
+  疲惫: '潜伏期疲惫型',
+  焦虑: '脑内多窗口型',
+  期待: '想发生点什么型',
+  迷茫: '边走边找方向型',
+  兴奋: '心里有火花型',
+  怀旧: '旧电影回放型',
+  低落: '轻声往下坠型',
 }
 
 const closingLines = [
-  '你不是提交了一段文字，你只是把今天的自己留了下来。',
-  '这些念头没有消失，它们只是换了一种方式被看见。',
-  '今晚的你，至少被这些字轻轻托住了一下。',
+  '你留下的不只是一段话，还有今天这一刻的自己。',
+  '这些念头没有白白飘过去，它们只是换了一种方式被留住。',
+  '今晚的你，至少被这些字轻轻接住了一下。',
 ]
 
 export default function DiagnosisReport() {
@@ -47,24 +47,28 @@ export default function DiagnosisReport() {
 
   if (!diagnosis) return null
 
-  const moodEmoji = moodEmojiMap[diagnosis.mood] ?? '💭'
+  const moodEmoji = moodEmojiMap[diagnosis.mood] ?? '🫧'
   const stateTitle = moodTitles[diagnosis.mood] ?? `${diagnosis.mood}型`
   const contentLabel =
-    contentType === 'chat' ? '聊天边角' :
-    contentType === 'diary' ? '写给自己的话' :
-    contentType === 'voice' ? '深夜语音碎念' :
-    '朋友圈草稿'
+    contentType === 'chat'
+      ? '聊天边角'
+      : contentType === 'diary'
+        ? '写给自己的话'
+        : contentType === 'voice'
+          ? '深夜语音碎念'
+          : '没发出去的动态'
 
   const handleExport = async () => {
     if (!cardRef.current) return
+
     try {
       const dataUrl = await toPng(cardRef.current, { backgroundColor: '#0f1017' })
       const link = document.createElement('a')
-      link.download = '今日精神状态卡.png'
+      link.download = '今天的状态卡.png'
       link.href = dataUrl
       link.click()
     } catch {
-      // Ignore export errors
+      // Ignore export errors for unsupported environments.
     }
   }
 
@@ -72,12 +76,12 @@ export default function DiagnosisReport() {
     <section className="rounded-[32px] border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:p-7">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">Today's State</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">Today&apos;s State</p>
           <h3 className="mt-2 text-2xl font-semibold text-white sm:text-[2rem]">此刻的你</h3>
         </div>
         <button
           onClick={handleExport}
-          className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+          className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
         >
           保存今天的状态卡
         </button>
@@ -90,7 +94,7 @@ export default function DiagnosisReport() {
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="max-w-lg">
             <div className="text-4xl">{moodEmoji}</div>
-            <p className="mt-4 text-sm tracking-[0.24em] text-danmaku-muted/60 uppercase">{contentLabel}</p>
+            <p className="mt-4 text-sm uppercase tracking-[0.24em] text-danmaku-muted/60">{contentLabel}</p>
             <h4 className="mt-3 text-3xl font-semibold text-white sm:text-[2.5rem]">
               {stateTitle}
             </h4>
@@ -128,7 +132,7 @@ export default function DiagnosisReport() {
         </div>
 
         <div className="mt-8 rounded-[24px] border border-white/8 bg-white/[0.035] px-5 py-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-danmaku-muted/46">Closing Line</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-danmaku-muted/46">Soft Landing</p>
           <p className="mt-3 text-sm leading-7 text-danmaku-text-dim/82">
             {closing}
           </p>

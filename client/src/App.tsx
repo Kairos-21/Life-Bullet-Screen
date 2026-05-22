@@ -81,7 +81,7 @@ export default function App() {
     if (viewStage === 'echo' && hasResult && status === 'success') {
       const timer = window.setTimeout(() => {
         setViewStage('revealed')
-      }, 3400)
+      }, 6200)
       return () => window.clearTimeout(timer)
     }
   }, [hasResult, setViewStage, status, viewStage])
@@ -128,11 +128,11 @@ export default function App() {
                   exit={{ opacity: 0, y: -16 }}
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
-                  <div className="emotional-stage mx-auto max-w-4xl px-2 py-8 text-center">
+                  <div className="emotional-stage mx-auto max-w-4xl px-2 py-6 text-center">
                     <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Arrival</p>
                     <motion.p
                       key={lineIndex}
-                      className="mx-auto mt-5 max-w-2xl text-2xl font-medium leading-relaxed text-white sm:text-[2.2rem]"
+                      className="mx-auto mt-6 max-w-3xl text-[clamp(1.7rem,4.2vw,3.4rem)] font-medium leading-[1.28] text-white"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -140,29 +140,29 @@ export default function App() {
                     >
                       {rotatingLines[lineIndex]}
                     </motion.p>
-                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/74 sm:text-base">
-                      这里不是分析工具，也不是严肃倾诉室。它更像一个安静容器，让那些一闪而过的念头先有地方落下来。
+                    <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-danmaku-text-dim/74 sm:text-base">
+                      这里不是分析工具，也不是严肃倾诉室。它更像一块会发光的夜色，让一闪而过的念头先停一下。
                     </p>
                   </div>
 
-                  <div className="mx-auto mt-6 max-w-4xl">
+                  <div className="mx-auto mt-8 max-w-4xl">
                     <InputPanel />
                   </div>
 
                   <AnimatePresence>
                     {shouldRevealControls && (
                       <motion.section
-                        className="mx-auto mt-8 max-w-3xl rounded-[28px] border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+                        className="mx-auto mt-12 max-w-3xl rounded-[28px] border border-white/10 bg-white/[0.03] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-sm"
                         initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.35, ease: 'easeOut' }}
                       >
                         <div className="text-center">
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">Launch Settings</p>
-                          <h2 className="mt-3 text-xl font-semibold text-white">接下来，想让谁来接住它？</h2>
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">A Softer Echo</p>
+                          <h2 className="mt-3 text-xl font-semibold text-white">如果愿意，它还可以被更深地读一遍。</h2>
                           <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-danmaku-text-dim/75">
-                            默认本地处理就够轻，想要更深一点的回声，再切换到自己的 Key 或演示模式。
+                            轻一点的显影已经够用了；如果你想让它更完整一点，也可以换一种回声方式。
                           </p>
                         </div>
 
@@ -176,12 +176,12 @@ export default function App() {
                   </AnimatePresence>
 
                   {!shouldRevealControls && (
-                    <div className="mt-8 text-center">
+                    <div className="mt-10 text-center">
                       <button
                         onClick={() => setShowControls(true)}
                         className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
                       >
-                        先让我写完，再决定怎么显影
+                        等这句慢慢落稳，再决定怎么显影
                       </button>
                     </div>
                   )}
@@ -226,12 +226,12 @@ export default function App() {
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
                   <div className="mx-auto mb-8 max-w-3xl text-center">
-                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Now Showing</p>
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
                     <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
                       你刚刚留下的那些字，已经慢慢长成了今天的样子。
                     </h2>
                     <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
-                      先看第一眼最像你的状态，再往下看那些围观你的弹幕、反复出现的词和最后那一幕电影感。
+                      这里会先映出一个最像此刻的侧影，后面那些弹幕、词和电影感，只是慢慢跟上来。
                     </p>
 
                     <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -244,7 +244,7 @@ export default function App() {
                         onClick={handleReset}
                         className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
                       >
-                        再留一句
+                        如果还想，也可以再留一句
                       </button>
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default function App() {
                   {farewell && (
                     <section className="pb-8 pt-10 text-center">
                       <div className="mx-auto max-w-2xl rounded-[30px] border border-white/10 bg-white/[0.035] px-6 py-10 backdrop-blur-sm">
-                        <div className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/35">Keep This Night</div>
+                        <div className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/35">Let It Stay A Little Longer</div>
                         <p className="mx-auto mt-5 max-w-lg text-xl leading-relaxed text-danmaku-text-dim">
                           {farewell}
                         </p>
@@ -274,13 +274,13 @@ export default function App() {
                             onClick={handleReset}
                             className="rounded-full border border-white/10 bg-white/[0.05] px-6 py-2.5 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
                           >
-                            再留一句
+                            还想留下别的话
                           </button>
                           <button
                             onClick={() => setViewStage('revealed')}
                             className="rounded-full border border-transparent px-4 py-2.5 text-sm text-danmaku-muted transition-colors hover:text-danmaku-text cursor-pointer"
                           >
-                            先让这些字待在这里
+                            先让这些字安静待一会儿
                           </button>
                         </div>
                       </div>

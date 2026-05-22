@@ -4,9 +4,9 @@ import { userApiProvider } from '../services/ai-providers/user-api'
 import { demoProvider } from '../services/ai-providers/demo'
 
 const statusLabels: Record<AnalysisStatus, string> = {
-  idle: '发射这条弹幕',
+  idle: '让这句话慢慢显影',
   loading: '弹幕正在落地…',
-  success: '再留一句',
+  success: '如果还想，可以再留一句',
   error: '重新试试',
 }
 

@@ -65,6 +65,23 @@ body.mood-bg-active::after {
   position: relative;
 }
 
+.welcome-stage {
+  position: relative;
+  max-width: 900px;
+}
+
+.welcome-stage-quote {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+
+.movie-scene-copy,
+.movie-scene-tagline {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+  text-wrap: balance;
+}
+
 .emotion-input-shell {
   position: relative;
   overflow: hidden;

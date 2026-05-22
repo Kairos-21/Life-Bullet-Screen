@@ -57,7 +57,7 @@ function buildDanmakuItems(texts: string[]): DanmakuItem[] {
   return [...act1, ...act2, ...act3]
 }
 
-const actLabel = (act: number) => {
+function actLabel(act: number) {
   if (act === 1) return '前奏'
   if (act === 2) return '共鸣'
   return '余韵'
@@ -66,17 +66,17 @@ const actLabel = (act: number) => {
 export default function DanmakuView() {
   const result = useAppStore((s) => s.result)
   const [paused, setPaused] = useState(false)
-  const [speed, setSpeed] = useState(1)
+  const [speed, setSpeed] = useState(0.5)
   const [currentAct, setCurrentAct] = useState(0)
+
   const items = useMemo(() => {
     if (!result?.danmaku?.length) return []
     return buildDanmakuItems(result.danmaku)
   }, [result])
 
   const mood = result?.diagnosis?.mood
-  const isGentle = mood ? gentleMoods.some(m => mood.includes(m) || m.includes(mood)) : false
+  const isGentle = mood ? gentleMoods.some((m) => mood.includes(m) || m.includes(mood)) : false
 
-  // Track current act for the indicator
   useEffect(() => {
     if (paused || !items.length) return
     setCurrentAct(1)
@@ -97,14 +97,14 @@ export default function DanmakuView() {
   if (!items.length) return null
 
   return (
-    <div className="bg-danmaku-surface border border-white/10 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-        <h3 className="text-sm font-semibold text-danmaku-text flex items-center gap-2">
+    <div className="overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(20,22,34,0.98),rgba(9,10,16,0.98))] shadow-[0_24px_70px_rgba(0,0,0,0.24)]">
+      <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.03] px-5 py-4">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-danmaku-text">
           <span className="text-danmaku-accent">▸</span>
           人生弹幕
-          <span className="text-danmaku-muted text-xs">{items.length}条</span>
+          <span className="text-xs text-danmaku-muted/68">{items.length}条</span>
           {currentAct > 0 && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full transition-colors duration-500 ${
+            <span className={`rounded-full px-1.5 py-0.5 text-xs transition-colors duration-500 ${
               currentAct === 1 ? 'bg-cyan-400/15 text-cyan-400' :
               currentAct === 2 ? 'bg-danmaku-accent/15 text-danmaku-accent' :
               'bg-danmaku-gold/15 text-danmaku-gold'
@@ -113,54 +113,62 @@ export default function DanmakuView() {
             </span>
           )}
         </h3>
-        <div className="flex items-center gap-3 text-xs text-danmaku-muted">
+
+        <div className="flex items-center gap-3 text-xs text-danmaku-muted/72">
           <button
             onClick={() => setSpeed((s) => Math.max(0.5, s - 0.5))}
-            className="hover:text-danmaku-text transition-colors cursor-pointer"
+            className="cursor-pointer transition-colors hover:text-danmaku-text"
           >
             减速
           </button>
           <span>{speed}x</span>
           <button
             onClick={() => setSpeed((s) => Math.min(3, s + 0.5))}
-            className="hover:text-danmaku-text transition-colors cursor-pointer"
+            className="cursor-pointer transition-colors hover:text-danmaku-text"
           >
             加速
           </button>
           <button
             onClick={() => setPaused(!paused)}
-            className="ml-2 px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
+            className="ml-1 rounded-lg bg-white/[0.08] px-2.5 py-1 transition-colors hover:bg-white/[0.14] cursor-pointer"
           >
             {paused ? '▶' : '⏸'}
           </button>
         </div>
       </div>
+
       <div
-        className="danmaku-container relative h-80 overflow-hidden"
-        style={{ background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%)' }}
+        className="relative h-80 overflow-hidden"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(28,44,72,0.48) 0%, rgba(11,13,22,0.98) 68%, rgba(8,9,14,1) 100%)',
+        }}
       >
-        {/* Act transition overlays */}
         <div
-          className="absolute inset-x-0 bottom-0 h-12 pointer-events-none z-10 transition-opacity duration-1000"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(to top, rgba(10,10,15,0.6), transparent)',
-            opacity: isGentle ? 0.8 : 0.4,
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.02), transparent 24%, transparent 76%, rgba(255,255,255,0.015))',
+          }}
+        />
+
+        <div
+          className="absolute inset-x-0 bottom-0 z-10 h-12 pointer-events-none transition-opacity duration-1000"
+          style={{
+            background: 'linear-gradient(to top, rgba(10,10,15,0.7), transparent)',
+            opacity: isGentle ? 0.85 : 0.45,
           }}
         />
 
         {items.map((item, i) => (
           <span
             key={i}
-            className="danmaku-item"
+            className="absolute whitespace-nowrap"
             style={{
-              position: 'absolute',
               top: `${item.top}px`,
               left: '100%',
               fontSize: `${item.fontSize}px`,
               color: item.color,
-              whiteSpace: 'nowrap',
               fontWeight: item.act === 3 ? 600 : 400,
-              opacity: item.act === 3 ? 0.85 : item.act === 1 ? 0.7 : 0.9,
+              opacity: item.act === 3 ? 0.85 : item.act === 1 ? 0.68 : 0.9,
               textShadow: item.act === 3
                 ? '0 0 12px rgba(0,0,0,0.9), 0 0 4px currentColor'
                 : '0 0 8px rgba(0,0,0,0.8), 0 0 2px currentColor',

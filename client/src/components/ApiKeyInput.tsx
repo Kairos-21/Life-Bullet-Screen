@@ -65,7 +65,7 @@ export default function ApiKeyInput() {
       </label>
 
       <p className="text-xs leading-6 text-danmaku-muted/62">
-        想要完整一些的显影效果时再打开它就好。默认本地模式已经足够轻，DeepSeek 也会是比较顺手的选择。
+        如果你想听见更完整一点的回声，再来打开它就好。轻量本地模式也已经足够温柔。
       </p>
     </div>
   )

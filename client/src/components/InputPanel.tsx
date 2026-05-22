@@ -64,6 +64,7 @@ export default function InputPanel() {
   const setViewStage = useAppStore((s) => s.setViewStage)
 
   const [isRecording, setIsRecording] = useState(false)
+  const [sampleOpen, setSampleOpen] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   const activeType = typeOptions.find((option) => option.value === contentType) ?? typeOptions[0]
@@ -135,7 +136,7 @@ export default function InputPanel() {
     <div className="w-full space-y-5">
       <div className="emotion-input-shell">
         <div className="mb-6 text-center">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">Composition Space</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">A Place To Put It Down</p>
           <h2 className="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl">
             此刻脑子飘过什么？
           </h2>
@@ -171,10 +172,8 @@ export default function InputPanel() {
                 onClick={fillSample}
                 className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
               >
-                先放一段示例进来
+                先借一句别人的心情看看
               </button>
-
-              <span className="hidden sm:inline">{helperLine}</span>
             </div>
 
             <button
@@ -184,7 +183,7 @@ export default function InputPanel() {
                   ? 'border-danmaku-accent/40 bg-danmaku-accent text-white shadow-[0_0_24px_rgba(233,69,96,0.35)]'
                   : 'border-white/10 bg-white/[0.04] text-danmaku-muted hover:border-white/20 hover:text-white'
               }`}
-              title={isRecording ? '停止语音输入' : '开始语音输入'}
+                title={isRecording ? '先停在这里' : '也可以轻声说出来'}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
@@ -194,6 +193,10 @@ export default function InputPanel() {
               </svg>
             </button>
           </div>
+
+          <p className="mt-4 text-center text-xs leading-6 text-danmaku-muted/66 sm:text-sm">
+            {helperLine}
+          </p>
         </div>
 
         <AnimatePresence>
@@ -223,29 +226,48 @@ export default function InputPanel() {
               </div>
 
               <p className="text-center text-sm text-danmaku-muted/70">
-                现在这条更像 <span className="text-danmaku-text">{activeType.hint}</span>
+                它现在更像 <span className="text-danmaku-text">{activeType.hint}</span>
               </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {typeOptions.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => handleShowDemo(option.value)}
-            className="group rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.05] cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{option.icon}</span>
-              <span className="text-sm font-medium text-white">{option.label}</span>
-            </div>
-            <p className="mt-2 text-xs leading-6 text-danmaku-muted/72">
-              {option.hint}
-            </p>
-          </button>
-        ))}
+      <div className="mx-auto max-w-3xl">
+        <button
+          onClick={() => setSampleOpen((value) => !value)}
+          className="mx-auto flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
+        >
+          {sampleOpen ? '先把这些收起来' : '也可以先看看别人留下过什么'}
+        </button>
+
+        <AnimatePresence>
+          {sampleOpen && (
+            <motion.div
+              className="mt-5 grid gap-3 sm:grid-cols-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              {typeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleShowDemo(option.value)}
+                  className="group rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.05] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{option.icon}</span>
+                    <span className="text-sm font-medium text-white">{option.label}</span>
+                  </div>
+                  <p className="mt-2 text-xs leading-6 text-danmaku-muted/72">
+                    {option.hint}
+                  </p>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

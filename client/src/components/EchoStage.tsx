@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 
@@ -18,7 +18,7 @@ const moodEchoes: Record<string, string[]> = {
 const genericEchoes = [
   '收到一条刚刚从脑海边缘飘过的念头。',
   '先别急着解释它，它已经被接住了。',
-  '有些话不用说得完整，也已经算说过。'
+  '有些话不用说得完整，也已经算说过。',
 ]
 
 function getOpening(content: string) {
@@ -28,7 +28,6 @@ function getOpening(content: string) {
     .find(Boolean)
 
   if (!firstLine) return '刚刚那句心事'
-
   return firstLine.length > 18 ? `${firstLine.slice(0, 18)}…` : firstLine
 }
 
@@ -36,6 +35,8 @@ export default function EchoStage() {
   const result = useAppStore((s) => s.result)
   const content = useAppStore((s) => s.content)
   const contentType = useAppStore((s) => s.contentType)
+  const setViewStage = useAppStore((s) => s.setViewStage)
+  const [countdown, setCountdown] = useState(5)
 
   const echoes = useMemo(() => {
     const mood = result?.diagnosis?.mood ?? ''
@@ -53,6 +54,22 @@ export default function EchoStage() {
       `它先被放进了今天的${sourceLabel}里。`,
     ]
   }, [content, contentType, result])
+
+  useEffect(() => {
+    setCountdown(5)
+    const timer = window.setInterval(() => {
+      setCountdown((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer)
+          setViewStage('revealed')
+          return 0
+        }
+        return current - 1
+      })
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [setViewStage])
 
   return (
     <section className="mx-auto flex min-h-[68vh] w-full max-w-4xl items-center justify-center px-4">
@@ -75,7 +92,7 @@ export default function EchoStage() {
                 : 'text-base sm:text-lg leading-8 text-danmaku-text-dim/85'}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 + index * 0.65, ease: 'easeOut' }}
+              transition={{ duration: 0.8, delay: 0.45 + index * 0.95, ease: 'easeOut' }}
             >
               {line}
             </motion.p>
@@ -93,10 +110,27 @@ export default function EchoStage() {
           className="mt-6 text-sm text-danmaku-muted/55"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
+          transition={{ delay: 3.1, duration: 0.8 }}
         >
-          你的弹幕正在慢慢显影。
+          你的弹幕正在慢慢显影，不必着急。
         </motion.p>
+
+        <motion.div
+          className="mt-8 flex items-center justify-center gap-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 4.2, duration: 0.8 }}
+        >
+          <button
+            onClick={() => setViewStage('revealed')}
+            className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+          >
+            想继续的话，就往下看看
+          </button>
+          <span className="text-xs text-danmaku-muted/38">
+            大约 {countdown}s 后，它也会自己慢慢往下走
+          </span>
+        </motion.div>
       </div>
     </section>
   )
