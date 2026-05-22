@@ -21,51 +21,51 @@ export default function ApiKeyInput() {
   if (provider !== 'user-api') return null
 
   return (
-    <div className="w-full max-w-md mx-auto mt-4 space-y-3">
-      {/* Service selector */}
-      <div className="flex gap-1">
-        {serviceOptions.map((opt) => (
+    <div className="mx-auto w-full max-w-2xl space-y-4 rounded-[24px] border border-white/8 bg-black/16 p-4">
+      <div className="flex flex-wrap gap-2">
+        {serviceOptions.map((option) => (
           <button
-            key={opt.value}
-            onClick={() => setApiService(opt.value)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-              apiService === opt.value
+            key={option.value}
+            onClick={() => setApiService(option.value)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
+              apiService === option.value
                 ? 'bg-danmaku-accent text-white'
-                : 'bg-danmaku-surface text-danmaku-muted hover:text-danmaku-text border border-white/10'
+                : 'border border-white/10 bg-white/[0.04] text-danmaku-text-dim hover:bg-white/[0.08] hover:text-white'
             }`}
           >
-            {opt.label}
+            {option.label}
           </button>
         ))}
       </div>
 
-      {/* Key input */}
       <div className="flex gap-2">
         <input
           type={showKey ? 'text' : 'password'}
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder={serviceOptions.find((s) => s.value === apiService)?.hint + '...'}
-          className="flex-1 bg-danmaku-surface border border-white/10 rounded-lg px-4 py-2 text-sm text-danmaku-text placeholder-danmaku-muted/50 focus:outline-none focus:border-danmaku-accent/50 transition-colors"
+          placeholder={`${serviceOptions.find((item) => item.value === apiService)?.hint}...`}
+          className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-danmaku-muted/45 focus:border-danmaku-accent/50"
         />
         <button
-          onClick={() => setShowKey(!showKey)}
-          className="px-3 py-2 bg-danmaku-surface border border-white/10 rounded-lg text-xs text-danmaku-muted hover:text-danmaku-text transition-colors cursor-pointer"
+          onClick={() => setShowKey((value) => !value)}
+          className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-xs text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
         >
           {showKey ? '隐藏' : '显示'}
         </button>
       </div>
-      <label className="flex items-center gap-2 text-xs text-danmaku-muted cursor-pointer">
+
+      <label className="flex items-center gap-2 text-xs text-danmaku-muted/78 cursor-pointer">
         <input
           type="checkbox"
           checked={rememberKey}
           onChange={(e) => setRememberKey(e.target.checked)}
           className="accent-danmaku-accent"
         />
-        记住 Key（存储在本机浏览器）
+        记住 Key，仅保存在你的浏览器里
       </label>
-      <p className="text-xs text-danmaku-muted/60">
-        Key 仅保存在你的浏览器中。推荐使用 DeepSeek，国内直连，性价比高。
+
+      <p className="text-xs leading-6 text-danmaku-muted/62">
+        想要完整一些的显影效果时再打开它就好。默认本地模式已经足够轻，DeepSeek 也会是比较顺手的选择。
       </p>
     </div>
   )

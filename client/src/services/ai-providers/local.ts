@@ -1,4 +1,4 @@
-import type { AIProvider, ProviderType, ContentType, AnalysisResult } from './types'
+import type { AIProvider, ContentType, AnalysisResult } from './types'
 
 interface ModelInstance {
   pipeline: (task: string, text: string, options?: Record<string, unknown>) => Promise<unknown>

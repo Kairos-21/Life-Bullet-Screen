@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAppStore } from '../store/appStore'
 
 interface DanmakuItem {
@@ -68,8 +68,6 @@ export default function DanmakuView() {
   const [paused, setPaused] = useState(false)
   const [speed, setSpeed] = useState(1)
   const [currentAct, setCurrentAct] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setInterval>>()
-
   const items = useMemo(() => {
     if (!result?.danmaku?.length) return []
     return buildDanmakuItems(result.danmaku)

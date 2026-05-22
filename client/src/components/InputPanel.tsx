@@ -1,8 +1,8 @@
-import { useState, useRef, useCallback } from 'react'
+import { useMemo, useRef, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import type { ContentType } from '../services/ai-providers/types'
 
-// Web Speech API type declarations
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
   resultIndex: number
@@ -26,39 +26,34 @@ interface SpeechRecognition extends EventTarget {
   stop: () => void
 }
 
-const typeOptions: { value: ContentType; label: string; icon: string }[] = [
-  { value: 'chat', label: '微信聊天', icon: '💬' },
-  { value: 'diary', label: '日记', icon: '📝' },
-  { value: 'voice', label: '语音碎碎念', icon: '🎙️' },
-  { value: 'social', label: '朋友圈', icon: '📱' },
+const typeOptions: { value: ContentType; label: string; icon: string; hint: string }[] = [
+  { value: 'chat', label: '聊天边角', icon: '💬', hint: '像刚刚没发出去的一句吐槽' },
+  { value: 'diary', label: '写给自己', icon: '✍️', hint: '像夜里写在备忘录里的句子' },
+  { value: 'voice', label: '深夜碎念', icon: '🎙️', hint: '像走路时突然冒出来的心声' },
+  { value: 'social', label: '朋友圈草稿', icon: '🌙', hint: '像想发又删掉的那一条' },
 ]
 
 const sampleTexts: Record<ContentType, string> = {
-  chat: `室友: 今天加班到十点，累死了
-我: 我也是，感觉最近好丧
-室友: 你说我们这么拼到底图什么
-我: 不知道...可能是习惯了
-室友: 周末要不要出去走走
-我: 可以啊，去哪
-室友: 随便，换个心情就行
-我: 好，周一再聊具体的
-室友: 晚安
-我: 晚安`,
-  diary: `2月14日 阴
-今天又是普通的一天。早上起不来，咖啡也没救回来。工作的时候总走神，想着要不要换个城市生活。晚上翻手机看到以前的照片，有点恍惚。时间过得真快，我已经不是那个觉得自己什么都能做到的人了。但也不坏，至少学会了和自己和解。
+  chat: `室友：今天又加班到十点，累死了
+我：我也是，感觉最近好像总在假装自己还行
+室友：你说我们这么拼到底图什么
+我：不知道，可能是习惯了
+室友：周末要不要出去走走
+我：可以啊，换个心情也好`,
+  diary: `今天又是普通的一天。白天忙得顾不上自己，晚上安静下来以后才发现，原来脑子里还有那么多没说出来的话。
 
-2月15日 小雨
-下雨天适合发呆。看了半本书，听了很久的歌。妈妈打电话来问我什么时候回家，我说快了。其实不知道"快了"是什么时候。`,
-  voice: `其实我也不知道自己在想什么，就是觉得最近有点不对劲。也说不上来是哪里不对，可能就是太累了。每天醒来就觉得自己欠了这个世界什么，得不停地做事才能安心。有时候半夜醒了就睡不着，脑子里各种乱七八糟的事。我在想是不是应该去看个电影或者找个地方待几天。我也不知道说出来有没有用，反正就这么着吧。`,
-  social: `分享图片
-今天的云很好看，像棉花糖
-又是加班的一周，但周末要好好过！
-转: 成年人的崩溃都是静音模式的
-终于打卡了这家店，排队一小时很值得
-五月的第一条朋友圈，时间过得好快
-深夜的便利店是城市里最温暖的地方
-好久没发朋友圈了，冒个泡`,
+有时候会觉得自己像在自动播放，按时回应、按时工作、按时说“没事”。但真的没事吗，好像也不是。`,
+  voice: `其实我也不知道自己在想什么，就是突然觉得好累。不是那种立刻想哭的累，是一种一直醒着、一直撑着、一直没有真正放松过的累。`,
+  social: `今天路过便利店的时候突然觉得，深夜里最温柔的地方可能真的是便利店。
+
+灯一直亮着，谁进去都不会被追问为什么这么晚还没回家。`,
 }
+
+const helperLines = [
+  '先别整理，想到哪写到哪。',
+  '一句也行，不用把它说得很完整。',
+  '你不需要把情绪包装成正确答案。',
+]
 
 export default function InputPanel() {
   const content = useAppStore((s) => s.content)
@@ -66,18 +61,30 @@ export default function InputPanel() {
   const setContent = useAppStore((s) => s.setContent)
   const setContentType = useAppStore((s) => s.setContentType)
   const loadSampleResult = useAppStore((s) => s.loadSampleResult)
+  const setViewStage = useAppStore((s) => s.setViewStage)
 
   const [isRecording, setIsRecording] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
+  const activeType = typeOptions.find((option) => option.value === contentType) ?? typeOptions[0]
+  const hasContent = content.trim().length > 0
+  const longEnough = content.trim().length >= 12
+
+  const helperLine = useMemo(() => {
+    if (content.trim().length > 45) return '好，就先这样。让这条弹幕自己发光。'
+    if (content.trim().length > 0) return '嗯，这句先放这儿。'
+    return helperLines[Math.floor(Math.random() * helperLines.length)]
+  }, [content])
+
   const fillSample = () => {
     setContent(sampleTexts[contentType])
+    setViewStage('composing')
   }
 
   const startRecording = useCallback(() => {
     const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognitionCtor) {
-      alert('当前浏览器不支持语音识别，请使用 Chrome 或 Edge')
+      alert('当前浏览器不支持语音识别，请使用 Chrome 或 Edge。')
       return
     }
 
@@ -87,18 +94,16 @@ export default function InputPanel() {
     recognition.lang = 'zh-CN'
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interim = ''
       let final = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
         if (result.isFinal) {
           final += result[0].transcript
-        } else {
-          interim += result[0].transcript
         }
       }
       if (final) {
         setContent(content + (content ? '\n' : '') + final)
+        setViewStage('composing')
       }
     }
 
@@ -114,129 +119,133 @@ export default function InputPanel() {
     recognition.start()
     setIsRecording(true)
     setContentType('voice')
-  }, [content, setContent, setContentType])
+    setViewStage('composing')
+  }, [content, setContent, setContentType, setViewStage])
 
   const stopRecording = useCallback(() => {
     recognitionRef.current?.stop()
     setIsRecording(false)
   }, [])
 
-  const demoOptions = [
-    { value: 'chat' as ContentType, label: '聊天', sub: '打工人夜话', icon: '💬', color: 'from-cyan-500 to-blue-500' },
-    { value: 'diary' as ContentType, label: '日记', sub: '内心独白', icon: '📝', color: 'from-purple-500 to-pink-500' },
-    { value: 'voice' as ContentType, label: '语音', sub: '深夜碎碎念', icon: '🎙️', color: 'from-orange-500 to-red-500' },
-    { value: 'social' as ContentType, label: '朋友圈', sub: '社交人设', icon: '📱', color: 'from-green-500 to-teal-500' },
-  ]
-
   const handleShowDemo = (type: ContentType) => {
     loadSampleResult(sampleTexts[type], type)
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4">
-      {/* Demo grid */}
-      <div className="text-center mb-4">
-        <p className="text-xs text-danmaku-muted mb-1">
-          点一个范例，看看 AI 怎么分析不同类型的内容
-        </p>
-        <p className="text-xs text-danmaku-muted/60 mb-3">
-          范例由 <span className="text-danmaku-gold/80">DeepSeek</span> 模型通过 API 生成，效果优于浏览器的免费基础分析（轻量模型，能力有限）。
-          需要同等质量？切换「深度分析」模式，填入你的 API Key。
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {demoOptions.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleShowDemo(opt.value)}
-              className={`group relative bg-danmaku-surface border border-white/10 rounded-xl p-4 text-left hover:border-white/30 transition-all cursor-pointer hover:-translate-y-0.5`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{opt.icon}</span>
-                <span className="text-sm font-semibold text-danmaku-text group-hover:text-white transition-colors">
-                  {opt.label}
-                </span>
-              </div>
-              <div className="text-xs text-danmaku-muted">{opt.sub}</div>
-            </button>
-          ))}
+    <div className="w-full space-y-5">
+      <div className="emotion-input-shell">
+        <div className="mb-6 text-center">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">Composition Space</p>
+          <h2 className="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl">
+            此刻脑子飘过什么？
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-danmaku-text-dim/82 sm:text-base">
+            一句吐槽、一点 emo、一段自嘲、一个没法发朋友圈的念头，都可以先丢进来。
+          </p>
         </div>
+
+        <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-black/18 p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3 text-xs text-danmaku-muted/65">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-2 w-2 rounded-full bg-danmaku-accent/70" />
+              {activeType.label}
+            </div>
+            <div>{hasContent ? `${content.trim().length} 个字正在显影` : '不用完整，也不用正确'}</div>
+          </div>
+
+          <textarea
+            value={content}
+            onFocus={() => setViewStage('composing')}
+            onChange={(e) => {
+              setContent(e.target.value)
+              if (e.target.value.trim()) setViewStage('composing')
+            }}
+            placeholder="例如：今天又假装很忙。&#10;&#10;或者：突然觉得好累，但也不知道该跟谁说。"
+            rows={hasContent ? 11 : 9}
+            className="min-h-[240px] w-full resize-none bg-transparent px-1 py-2 text-base leading-8 text-danmaku-text outline-none placeholder:text-danmaku-muted/42 sm:text-lg"
+          />
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-xs text-danmaku-muted">
+              <button
+                onClick={fillSample}
+                className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
+              >
+                先放一段示例进来
+              </button>
+
+              <span className="hidden sm:inline">{helperLine}</span>
+            </div>
+
+            <button
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all cursor-pointer ${
+                isRecording
+                  ? 'border-danmaku-accent/40 bg-danmaku-accent text-white shadow-[0_0_24px_rgba(233,69,96,0.35)]'
+                  : 'border-white/10 bg-white/[0.04] text-danmaku-muted hover:border-white/20 hover:text-white'
+              }`}
+              title={isRecording ? '停止语音输入' : '开始语音输入'}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" y1="19" x2="12" y2="23" />
+                <line x1="8" y1="23" x2="16" y2="23" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {longEnough && (
+            <motion.div
+              className="mt-5 space-y-4"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            >
+              <div className="flex flex-wrap justify-center gap-2">
+                {typeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setContentType(option.value)}
+                    className={`rounded-full px-4 py-2 text-sm transition-all cursor-pointer ${
+                      contentType === option.value
+                        ? 'bg-danmaku-accent text-white shadow-[0_10px_24px_rgba(233,69,96,0.22)]'
+                        : 'bg-white/[0.04] text-danmaku-text-dim hover:bg-white/[0.08] hover:text-white'
+                    }`}
+                  >
+                    <span className="mr-2">{option.icon}</span>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-center text-sm text-danmaku-muted/70">
+                现在这条更像 <span className="text-danmaku-text">{activeType.hint}</span>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Type selector */}
-      <div className="flex gap-2 mb-4 flex-wrap justify-center">
-        {typeOptions.map((opt) => (
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {typeOptions.map((option) => (
           <button
-            key={opt.value}
-            onClick={() => { setContentType(opt.value); setContent('') }}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-              contentType === opt.value
-                ? 'bg-danmaku-accent text-white shadow-lg shadow-danmaku-accent/30'
-                : 'bg-danmaku-surface text-danmaku-muted hover:text-white hover:bg-danmaku-surface/80'
-            }`}
+            key={option.value}
+            onClick={() => handleShowDemo(option.value)}
+            className="group rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.05] cursor-pointer"
           >
-            <span className="mr-1">{opt.icon}</span>
-            {opt.label}
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{option.icon}</span>
+              <span className="text-sm font-medium text-white">{option.label}</span>
+            </div>
+            <p className="mt-2 text-xs leading-6 text-danmaku-muted/72">
+              {option.hint}
+            </p>
           </button>
         ))}
-      </div>
-
-      {/* Text area */}
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder={
-          contentType === 'voice'
-            ? "点右下角麦克风，说出你当下的真实想法...\n\n不用组织语言，想到什么说什么，深夜说不出口的话，这里都接得住。"
-            : contentType === 'chat'
-              ? "在这里粘贴你的聊天记录...\n\n支持：微信 / QQ / 其他聊天应用"
-              : contentType === 'diary'
-                ? "在这里写或粘贴你的日记..."
-                : "在这里粘贴你的朋友圈内容..."
-        }
-        rows={10}
-        className="w-full bg-danmaku-surface border border-white/10 rounded-xl p-4 text-danmaku-text placeholder-danmaku-muted/50 resize-none focus:outline-none focus:border-danmaku-accent/50 transition-colors text-sm leading-relaxed"
-      />
-
-      {/* Voice input + sample fill + char count */}
-      <div className="flex justify-between items-center mt-2 text-xs text-danmaku-muted">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fillSample}
-            className="underline hover:text-danmaku-text transition-colors cursor-pointer"
-          >
-            填充示例内容试试
-          </button>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Recording indicator */}
-          {isRecording && (
-            <span className="flex items-center gap-1.5 text-danmaku-accent">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danmaku-accent opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-danmaku-accent" />
-              </span>
-              录音中...
-            </span>
-          )}
-          <span>{content.length} 字</span>
-          {/* Mic button */}
-          <button
-            onClick={isRecording ? stopRecording : startRecording}
-            className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
-              isRecording
-                ? 'bg-danmaku-accent text-white shadow-lg shadow-danmaku-accent/40'
-                : 'bg-danmaku-surface border border-white/10 text-danmaku-muted hover:text-white hover:border-white/30'
-            }`}
-            title={isRecording ? '停止录音' : '开始语音输入'}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-              <line x1="12" y1="19" x2="12" y2="23" />
-              <line x1="8" y1="23" x2="16" y2="23" />
-            </svg>
-          </button>
-        </div>
       </div>
     </div>
   )

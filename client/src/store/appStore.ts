@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { ProviderType, ContentType, AnalysisResult, ApiService } from '../services/ai-providers/types'
 
 export type AnalysisStatus = 'idle' | 'loading' | 'success' | 'error'
+export type ViewStage = 'landing' | 'composing' | 'echo' | 'revealed'
 
 interface AppState {
   // Input
@@ -9,6 +10,8 @@ interface AppState {
   contentType: ContentType
   setContent: (c: string) => void
   setContentType: (t: ContentType) => void
+  viewStage: ViewStage
+  setViewStage: (stage: ViewStage) => void
 
   // Provider
   provider: ProviderType
@@ -57,8 +60,10 @@ const loadRememberKey = (): boolean => {
 export const useAppStore = create<AppState>((set) => ({
   content: '',
   contentType: 'chat',
-  setContent: (c) => set({ content: c }),
+  viewStage: 'landing',
+  setContent: (c) => set((s) => ({ content: c, viewStage: c.trim() ? (s.result ? s.viewStage : 'composing') : (s.result ? s.viewStage : 'landing') })),
   setContentType: (t) => set({ contentType: t }),
+  setViewStage: (viewStage) => set({ viewStage }),
 
   provider: 'local',
   setProvider: (p) => set({ provider: p }),
@@ -84,10 +89,10 @@ export const useAppStore = create<AppState>((set) => ({
   error: null,
   isSampleMode: false,
   setStatus: (status) => set({ status }),
-  setResult: (result) => set({ result, status: 'success', error: null }),
-  setError: (error) => set({ error, status: 'error' }),
+  setResult: (result) => set({ result, status: 'success', error: null, viewStage: 'echo' }),
+  setError: (error) => set((s) => ({ error, status: 'error', viewStage: s.content.trim() ? 'composing' : 'landing' })),
   loadSampleResult: async (content, contentType) => {
-    set({ status: 'loading', content, contentType })
+    set({ status: 'loading', content, contentType, viewStage: 'echo' })
     const modules: Record<ContentType, () => Promise<{ default: AnalysisResult }>> = {
       chat: () => import('../data/sampleResultChat.json'),
       diary: () => import('../data/sampleResultDiary.json'),
@@ -95,7 +100,7 @@ export const useAppStore = create<AppState>((set) => ({
       social: () => import('../data/sampleResultSocial.json'),
     }
     const { default: data } = await modules[contentType]()
-    set({ result: data, status: 'success', error: null, isSampleMode: true, contentType })
+    set({ result: data, status: 'success', error: null, isSampleMode: true, contentType, viewStage: 'echo' })
   },
-  reset: () => set({ status: 'idle', result: null, error: null, isSampleMode: false, content: '' }),
+  reset: () => set({ status: 'idle', result: null, error: null, isSampleMode: false, content: '', viewStage: 'landing' }),
 }))

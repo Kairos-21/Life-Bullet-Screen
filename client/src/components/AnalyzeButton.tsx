@@ -4,10 +4,10 @@ import { userApiProvider } from '../services/ai-providers/user-api'
 import { demoProvider } from '../services/ai-providers/demo'
 
 const statusLabels: Record<AnalysisStatus, string> = {
-  idle: '开始分析',
-  loading: '分析中...',
-  success: '重新分析',
-  error: '重试',
+  idle: '发射这条弹幕',
+  loading: '弹幕正在落地…',
+  success: '再留一句',
+  error: '重新试试',
 }
 
 export default function AnalyzeButton() {
@@ -34,7 +34,7 @@ export default function AnalyzeButton() {
           break
         case 'user-api':
           if (!apiKey) {
-            setError('请先设置 API Key')
+            setError('请先填写 API Key')
             setProvider('local')
             return
           }
@@ -48,7 +48,7 @@ export default function AnalyzeButton() {
       }
       setResult(result)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '分析失败，请重试'
+      const msg = e instanceof Error ? e.message : '这次没有顺利接住，稍后再试试'
       setError(msg)
     }
   }
@@ -57,21 +57,21 @@ export default function AnalyzeButton() {
   const isEmpty = !content.trim()
 
   return (
-    <div className="text-center mt-6">
+    <div className="text-center">
       <button
         onClick={handleAnalyze}
         disabled={isEmpty || isLoading}
-        className={`px-8 py-3 rounded-full text-lg font-bold transition-all cursor-pointer ${
+        className={`inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 text-base font-semibold transition-all cursor-pointer ${
           isEmpty || isLoading
-            ? 'bg-danmaku-surface text-danmaku-muted cursor-not-allowed'
-            : 'bg-danmaku-accent text-white hover:bg-danmaku-accent/90 shadow-lg shadow-danmaku-accent/30 active:scale-95'
+            ? 'bg-white/7 text-danmaku-muted cursor-not-allowed'
+            : 'bg-danmaku-accent text-white shadow-[0_14px_36px_rgba(233,69,96,0.28)] hover:-translate-y-0.5 hover:bg-danmaku-accent/92 active:translate-y-0'
         }`}
       >
         {isLoading ? (
-          <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <>
+            <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
             {statusLabels.loading}
-          </span>
+          </>
         ) : (
           statusLabels[status]
         )}

@@ -10,19 +10,14 @@
   --color-danmaku-muted: #8888aa;
   --color-danmaku-soft: #c8b6ff;
   --color-danmaku-warm: #ffe0c0;
-  --color-danmaku-accent-soft: #ff8a9e;
-  --color-danmaku-surface-raised: #1e1e36;
-  --color-danmaku-surface-overlay: #252540;
-  --color-danmaku-border: rgba(255, 255, 255, 0.08);
-  --color-danmaku-border-hover: rgba(255, 255, 255, 0.15);
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
   background: var(--color-danmaku-bg);
   color: var(--color-danmaku-text);
   font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -35,24 +30,25 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(233, 69, 96, 0.04), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 197, 24, 0.03), transparent);
   pointer-events: none;
   z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(233, 69, 96, 0.05), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(245, 197, 24, 0.03), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 20%);
 }
 
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% -20%, var(--mood-blob-top), transparent),
-    radial-gradient(ellipse 100% 60% at 80% 80%, var(--mood-blob-bottom), transparent);
   pointer-events: none;
   z-index: 0;
   opacity: 0;
   transition: opacity 1.8s ease;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, var(--mood-blob-top), transparent),
+    radial-gradient(ellipse 100% 60% at 80% 80%, var(--mood-blob-bottom), transparent);
 }
 
 body.mood-bg-active::after {
@@ -60,30 +56,85 @@ body.mood-bg-active::after {
 }
 
 #root {
-  min-height: 100vh;
   position: relative;
   z-index: 1;
+  min-height: 100vh;
 }
 
-/* Staggered card entrance */
+.emotional-stage {
+  position: relative;
+}
+
+.emotion-input-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 36px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018)),
+    rgba(12, 13, 20, 0.62);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(22px);
+}
+
+.emotion-input-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top center, rgba(233, 69, 96, 0.08), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(245, 197, 24, 0.07), transparent 28%);
+}
+
+.emotion-input-shell::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 35px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
 @keyframes stagger-in {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-stagger {
   opacity: 0;
-  animation: stagger-in 0.6s ease-out forwards;
+  animation: stagger-in 0.65s ease-out forwards;
 }
 
-/* Dark scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--color-danmaku-bg);
 }
+
 ::-webkit-scrollbar-thumb {
   background: #333;
-  border-radius: 3px;
+  border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+  .emotion-input-shell {
+    border-radius: 28px;
+    padding: 18px;
+  }
+
+  .emotion-input-shell::after {
+    border-radius: 27px;
+  }
 }

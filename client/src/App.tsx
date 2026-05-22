@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from './store/appStore'
 import WelcomeOverlay from './components/WelcomeOverlay'
 import Header from './components/Header'
@@ -7,37 +8,42 @@ import InputPanel from './components/InputPanel'
 import ProviderSelector from './components/ProviderSelector'
 import ApiKeyInput from './components/ApiKeyInput'
 import AnalyzeButton from './components/AnalyzeButton'
+import EchoStage from './components/EchoStage'
 import DanmakuView from './components/DanmakuView'
 import WordCloud from './components/WordCloud'
 import DiagnosisReport from './components/DiagnosisReport'
 import MovieScene from './components/MovieScene'
 import { getMoodColors, neutral } from './utils/moodBackground'
 
-const stagger = 'animate-stagger'
+const rotatingLines = [
+  '原来我的这些想法没有消失。',
+  '原来有人把这句轻轻接住了。',
+  '原来碎片化的心情，也能留下形状。',
+]
 
 const farewellMessages: Record<string, string[]> = {
   '平和': ['保持这份平静，它是你给自己的礼物。'],
   '愉悦': ['你笑起来的时候，世界都会亮一点。'],
   '积极': ['这股能量是真的，别让它跑掉。'],
-  '疲惫': ['今晚先把这些都放一放吧。你是 OK 的。明天太阳照常升起。'],
-  '焦虑': ['焦虑是你对生活认真，不是你不好。深呼吸，慢慢来。'],
+  '疲惫': ['今晚先把这些都放一放吧。你已经很努力了。'],
+  '焦虑': ['焦虑是你对生活认真，不是你不够好。深呼吸，慢慢来。'],
   '期待': ['有期待的日子，就值得好好过。'],
-  '迷茫': ['你不是迷路了，你是在找一条属于自己的路。'],
+  '迷茫': ['你不是迷路了，只是在找一条更像自己的路。'],
   '兴奋': ['这股劲真好。去追，别犹豫。'],
   '怀旧': ['过去之所以温暖，是因为你曾经认真活过。'],
-  '低落': ['你不是一个人。这些字里，有人在读你。'],
+  '低落': ['今晚先坐一会儿吧，这些字会陪你。'],
 }
 
 const fallbackFarewell = [
   '你的文字里藏着另一个自己。下次再见。',
-  '能被写出来的东西，就已经不再是负担了。',
-  '谢谢你让这些文字存在。晚安。',
+  '能被写出来的东西，就已经不再只是负担了。',
+  '谢谢你把这些字留了下来。',
 ]
 
 function getFarewell(mood: string): string {
   for (const [key, lines] of Object.entries(farewellMessages)) {
     if (mood.includes(key) || key.includes(mood)) {
-      return Array.isArray(lines) ? lines[0] : lines
+      return lines[0]
     }
   }
   return fallbackFarewell[Math.floor(Math.random() * fallbackFarewell.length)]
@@ -47,18 +53,38 @@ export default function App() {
   const status = useAppStore((s) => s.status)
   const error = useAppStore((s) => s.error)
   const result = useAppStore((s) => s.result)
-  const isSampleMode = useAppStore((s) => s.isSampleMode)
+  const viewStage = useAppStore((s) => s.viewStage)
+  const setViewStage = useAppStore((s) => s.setViewStage)
+  const content = useAppStore((s) => s.content)
   const reset = useAppStore((s) => s.reset)
-  const hasResult = result !== null
-  const [inputCollapsed, setInputCollapsed] = useState(false)
+  const isSampleMode = useAppStore((s) => s.isSampleMode)
   const [welcomeDone, setWelcomeDone] = useState(false)
+  const [showControls, setShowControls] = useState(false)
+  const [lineIndex, setLineIndex] = useState(0)
+
+  const hasResult = result !== null
+  const mood = result?.diagnosis?.mood ?? null
 
   const farewell = useMemo(() => {
-    if (!result?.diagnosis?.mood) return null
-    return getFarewell(result.diagnosis.mood)
-  }, [result])
+    if (!mood) return null
+    return getFarewell(mood)
+  }, [mood])
 
-  const mood = result?.diagnosis?.mood ?? null
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setLineIndex((current) => (current + 1) % rotatingLines.length)
+    }, 3200)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (viewStage === 'echo' && hasResult && status === 'success') {
+      const timer = window.setTimeout(() => {
+        setViewStage('revealed')
+      }, 3400)
+      return () => window.clearTimeout(timer)
+    }
+  }, [hasResult, setViewStage, status, viewStage])
 
   useEffect(() => {
     if (hasResult && status === 'success' && mood) {
@@ -74,10 +100,13 @@ export default function App() {
     }
   }, [hasResult, status, mood])
 
-  const handleBack = () => {
+  const handleReset = () => {
     reset()
-    setInputCollapsed(false)
+    setShowControls(false)
   }
+
+  const shouldShowComposer = !hasResult && viewStage !== 'echo'
+  const shouldRevealControls = content.trim().length >= 12 || showControls
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -88,121 +117,182 @@ export default function App() {
           <DemoBanner />
           <Header />
 
-          <main className="flex-1 max-w-3xl mx-auto w-full px-5 pb-16 space-y-12">
-            {/* Input section */}
-            {!hasResult || !inputCollapsed ? (
-              <section className="space-y-5">
-                <InputPanel />
-                {!hasResult && (
-                  <>
-                    <ProviderSelector />
-                    <ApiKeyInput />
-                    <AnalyzeButton />
-                  </>
-                )}
-                {hasResult && (
-                  <div className="flex items-center justify-center gap-5">
-                    <button
-                      onClick={handleBack}
-                      className="px-4 py-2 rounded-lg text-sm font-medium bg-white/10 text-danmaku-text hover:bg-white/20 border border-white/10 transition-all cursor-pointer"
+          <main className="flex-1 px-4 pb-18 sm:px-6">
+            <AnimatePresence mode="wait">
+              {shouldShowComposer && (
+                <motion.section
+                  key="composer"
+                  className="mx-auto w-full max-w-5xl"
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                >
+                  <div className="emotional-stage mx-auto max-w-4xl px-2 py-8 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Arrival</p>
+                    <motion.p
+                      key={lineIndex}
+                      className="mx-auto mt-5 max-w-2xl text-2xl font-medium leading-relaxed text-white sm:text-[2.2rem]"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.5 }}
                     >
-                      ← 返回输入
-                    </button>
-                    <button
-                      onClick={() => setInputCollapsed(true)}
-                      className="text-xs text-danmaku-muted hover:text-danmaku-text transition-colors cursor-pointer"
-                    >
-                      收起输入区 ↑
-                    </button>
-                  </div>
-                )}
-              </section>
-            ) : (
-              <div
-                onClick={() => setInputCollapsed(false)}
-                className="bg-danmaku-surface border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer hover:border-white/20 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-danmaku-muted">输入区已折叠</span>
-                  {isSampleMode && (
-                    <span className="text-xs bg-danmaku-gold/20 text-danmaku-gold px-2 py-0.5 rounded-full">
-                      范例展示中
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-danmaku-muted">展开修改 ↓</span>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleBack() }}
-                    className="text-xs px-2 py-1 rounded bg-danmaku-accent/30 text-danmaku-accent hover:bg-danmaku-accent/50 transition-colors cursor-pointer"
-                  >
-                    ← 返回输入
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 text-center">
-                {error}
-              </div>
-            )}
-
-            {/* Loading skeleton */}
-            {status === 'loading' && (
-              <div className="space-y-8 animate-pulse">
-                <div className="h-80 bg-danmaku-surface rounded-xl" />
-                <div className="h-72 bg-danmaku-surface rounded-xl" />
-                <div className="h-72 bg-danmaku-surface rounded-xl" />
-                <div className="h-80 bg-danmaku-surface rounded-xl" />
-              </div>
-            )}
-
-            {/* Results */}
-            {hasResult && status === 'success' && (
-              <>
-                {/* Act 1: Danmaku — 别人的声音 */}
-                <section className={stagger} style={{ animationDelay: '0ms' }}>
-                  <DanmakuView />
-                </section>
-
-                {/* Act 2: Diagnosis — 你被理解了 */}
-                <section className={stagger} style={{ animationDelay: '200ms' }}>
-                  <DiagnosisReport />
-                </section>
-
-                {/* Act 3: WordCloud — 你被提炼了 */}
-                <section className={stagger} style={{ animationDelay: '400ms' }}>
-                  <WordCloud />
-                </section>
-
-                {/* Act 4: MovieScene — 你被升华了 */}
-                <section className={`${stagger} pt-4`} style={{ animationDelay: '600ms' }}>
-                  <MovieScene />
-                </section>
-
-                {/* Farewell */}
-                {farewell && (
-                  <section className="text-center pt-6 pb-8">
-                    <div className="text-xs text-danmaku-muted/30 mb-4">— 以上 —</div>
-                    <p className="text-xl font-medium text-danmaku-text-dim leading-relaxed max-w-md mx-auto">
-                      {farewell}
+                      {rotatingLines[lineIndex]}
+                    </motion.p>
+                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/74 sm:text-base">
+                      这里不是分析工具，也不是严肃倾诉室。它更像一个安静容器，让那些一闪而过的念头先有地方落下来。
                     </p>
-                    <button
-                      onClick={handleBack}
-                      className="mt-8 px-6 py-2.5 rounded-full text-sm font-medium bg-white/5 text-danmaku-muted hover:text-danmaku-text hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
-                    >
-                      再测一次
-                    </button>
-                  </section>
-                )}
-              </>
-            )}
+                  </div>
+
+                  <div className="mx-auto mt-6 max-w-4xl">
+                    <InputPanel />
+                  </div>
+
+                  <AnimatePresence>
+                    {shouldRevealControls && (
+                      <motion.section
+                        className="mx-auto mt-8 max-w-3xl rounded-[28px] border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.35, ease: 'easeOut' }}
+                      >
+                        <div className="text-center">
+                          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">Launch Settings</p>
+                          <h2 className="mt-3 text-xl font-semibold text-white">接下来，想让谁来接住它？</h2>
+                          <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-danmaku-text-dim/75">
+                            默认本地处理就够轻，想要更深一点的回声，再切换到自己的 Key 或演示模式。
+                          </p>
+                        </div>
+
+                        <div className="mt-6 space-y-5">
+                          <ProviderSelector />
+                          <ApiKeyInput />
+                          <AnalyzeButton />
+                        </div>
+                      </motion.section>
+                    )}
+                  </AnimatePresence>
+
+                  {!shouldRevealControls && (
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={() => setShowControls(true)}
+                        className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+                      >
+                        先让我写完，再决定怎么显影
+                      </button>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-center text-sm text-red-300">
+                      {error}
+                    </div>
+                  )}
+
+                  {status === 'loading' && (
+                    <div className="mx-auto mt-10 max-w-2xl text-center">
+                      <div className="rounded-[28px] border border-white/10 bg-white/[0.03] px-6 py-10">
+                        <div className="mx-auto h-12 w-12 rounded-full border-2 border-white/12 border-t-danmaku-accent animate-spin" />
+                        <p className="mt-5 text-lg text-white">你的弹幕正在落地。</p>
+                        <p className="mt-2 text-sm text-danmaku-muted/72">先别急，它会先被轻轻接住，再慢慢显影。</p>
+                      </div>
+                    </div>
+                  )}
+                </motion.section>
+              )}
+
+              {viewStage === 'echo' && hasResult && (
+                <motion.section
+                  key="echo"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <EchoStage />
+                </motion.section>
+              )}
+
+              {viewStage === 'revealed' && hasResult && (
+                <motion.section
+                  key="revealed"
+                  className="mx-auto w-full max-w-4xl"
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                >
+                  <div className="mx-auto mb-8 max-w-3xl text-center">
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Now Showing</p>
+                    <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
+                      你刚刚留下的那些字，已经慢慢长成了今天的样子。
+                    </h2>
+                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
+                      先看第一眼最像你的状态，再往下看那些围观你的弹幕、反复出现的词和最后那一幕电影感。
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                      {isSampleMode && (
+                        <span className="rounded-full border border-danmaku-gold/30 bg-danmaku-gold/15 px-3 py-1 text-xs text-danmaku-gold">
+                          当前是示例显影
+                        </span>
+                      )}
+                      <button
+                        onClick={handleReset}
+                        className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+                      >
+                        再留一句
+                      </button>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="mx-auto mb-6 max-w-2xl rounded-2xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-center text-sm text-red-300">
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="space-y-8">
+                    <DiagnosisReport />
+                    <DanmakuView />
+                    <WordCloud />
+                    <MovieScene />
+                  </div>
+
+                  {farewell && (
+                    <section className="pb-8 pt-10 text-center">
+                      <div className="mx-auto max-w-2xl rounded-[30px] border border-white/10 bg-white/[0.035] px-6 py-10 backdrop-blur-sm">
+                        <div className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/35">Keep This Night</div>
+                        <p className="mx-auto mt-5 max-w-lg text-xl leading-relaxed text-danmaku-text-dim">
+                          {farewell}
+                        </p>
+                        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                          <button
+                            onClick={handleReset}
+                            className="rounded-full border border-white/10 bg-white/[0.05] px-6 py-2.5 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
+                          >
+                            再留一句
+                          </button>
+                          <button
+                            onClick={() => setViewStage('revealed')}
+                            className="rounded-full border border-transparent px-4 py-2.5 text-sm text-danmaku-muted transition-colors hover:text-danmaku-text cursor-pointer"
+                          >
+                            先让这些字待在这里
+                          </button>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                </motion.section>
+              )}
+            </AnimatePresence>
           </main>
 
-          <footer className="text-center py-5 text-xs text-danmaku-muted/25 border-t border-white/5">
-            人生弹幕机 · 你的文字里藏着另一个自己
+          <footer className="border-t border-white/5 py-5 text-center text-xs text-danmaku-muted/25">
+            人生弹幕机 · 那些没发出去的话，也算说过
           </footer>
         </>
       )}
