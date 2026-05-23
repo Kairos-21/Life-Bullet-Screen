@@ -19,7 +19,7 @@ const moodTitles: Record<string, string> = {
   平和: '慢慢亮着型',
   愉悦: '偷着开心型',
   积极: '还想往前走型',
-  疲惫: '潜伏期疲惫型',
+  疲惫: '温柔的迷茫型',
   焦虑: '脑内多窗口型',
   期待: '想发生点什么型',
   迷茫: '边走边找方向型',
@@ -74,14 +74,14 @@ export default function DiagnosisReport() {
 
   return (
     <section className="rounded-[32px] border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:p-7">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-xl">
           <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">Today&apos;s State</p>
           <h3 className="mt-2 text-2xl font-semibold text-white sm:text-[2rem]">此刻的你</h3>
         </div>
         <button
           onClick={handleExport}
-          className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
+          className="cursor-pointer self-start rounded-full border border-white/8 bg-white/[0.03] px-3.5 py-1.5 text-xs text-danmaku-muted/82 transition-colors hover:bg-white/[0.06] hover:text-white sm:self-auto"
         >
           保存今天的状态卡
         </button>

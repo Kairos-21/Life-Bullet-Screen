@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useCallback } from 'react'
+import { useMemo, useRef, useState, useCallback, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 import type { ContentType } from '../services/ai-providers/types'
@@ -27,10 +27,10 @@ interface SpeechRecognition extends EventTarget {
 }
 
 const typeOptions: { value: ContentType; label: string; icon: string; hint: string }[] = [
-  { value: 'chat', label: '聊天边角', icon: '💬', hint: '像刚刚没发出去的一句吐槽' },
+  { value: 'chat', label: '聊天边角', icon: '💬', hint: '像刚刚没发出去的那一句吐槽' },
   { value: 'diary', label: '写给自己', icon: '✍️', hint: '像夜里写在备忘录里的句子' },
   { value: 'voice', label: '深夜碎念', icon: '🎙️', hint: '像走路时突然冒出来的心声' },
-  { value: 'social', label: '朋友圈草稿', icon: '🌙', hint: '像想发又删掉的那一条' },
+  { value: 'social', label: '朋友圈草稿', icon: '🫧', hint: '像想发又删掉的那一条' },
 ]
 
 const sampleTexts: Record<ContentType, string> = {
@@ -45,7 +45,6 @@ const sampleTexts: Record<ContentType, string> = {
 有时候会觉得自己像在自动播放，按时回应、按时工作、按时说“没事”。但真的没事吗，好像也不是。`,
   voice: `其实我也不知道自己在想什么，就是突然觉得好累。不是那种立刻想哭的累，是一种一直醒着、一直撑着、一直没有真正放松过的累。`,
   social: `今天路过便利店的时候突然觉得，深夜里最温柔的地方可能真的是便利店。
-
 灯一直亮着，谁进去都不会被追问为什么这么晚还没回家。`,
 }
 
@@ -55,7 +54,7 @@ const helperLines = [
   '你不需要把情绪包装成正确答案。',
 ]
 
-export default function InputPanel() {
+export default function InputPanel({ secondaryAction }: { secondaryAction?: ReactNode }) {
   const content = useAppStore((s) => s.content)
   const contentType = useAppStore((s) => s.contentType)
   const setContent = useAppStore((s) => s.setContent)
@@ -98,9 +97,7 @@ export default function InputPanel() {
       let final = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
-        if (result.isFinal) {
-          final += result[0].transcript
-        }
+        if (result.isFinal) final += result[0].transcript
       }
       if (final) {
         setContent(content + (content ? '\n' : '') + final)
@@ -151,7 +148,7 @@ export default function InputPanel() {
               <span className="inline-flex h-2 w-2 rounded-full bg-danmaku-accent/70" />
               {activeType.label}
             </div>
-            <div>{hasContent ? `${content.trim().length} 个字正在显影` : '不用完整，也不用正确'}</div>
+            {hasContent ? <div>{`${content.trim().length} 个字正在显影`}</div> : <div className="w-4" />}
           </div>
 
           <textarea
@@ -161,7 +158,7 @@ export default function InputPanel() {
               setContent(e.target.value)
               if (e.target.value.trim()) setViewStage('composing')
             }}
-            placeholder="例如：今天又假装很忙。&#10;&#10;或者：突然觉得好累，但也不知道该跟谁说。"
+            placeholder={'例如：今天又假装很忙。\n\n或者：突然觉得好累，但也不知道该跟谁说。'}
             rows={hasContent ? 11 : 9}
             className="min-h-[240px] w-full resize-none bg-transparent px-1 py-2 text-base leading-8 text-danmaku-text outline-none placeholder:text-danmaku-muted/42 sm:text-lg"
           />
@@ -172,7 +169,7 @@ export default function InputPanel() {
                 onClick={fillSample}
                 className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
               >
-                先借一句别人的心情看看
+                把一段示例填进来
               </button>
             </div>
 
@@ -183,7 +180,7 @@ export default function InputPanel() {
                   ? 'border-danmaku-accent/40 bg-danmaku-accent text-white shadow-[0_0_24px_rgba(233,69,96,0.35)]'
                   : 'border-white/10 bg-white/[0.04] text-danmaku-muted hover:border-white/20 hover:text-white'
               }`}
-                title={isRecording ? '先停在这里' : '也可以轻声说出来'}
+              title={isRecording ? '先停在这里' : '也可以轻声说出来'}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
@@ -233,38 +230,58 @@ export default function InputPanel() {
         </AnimatePresence>
       </div>
 
-      <div className="mx-auto max-w-3xl">
-        <button
-          onClick={() => setSampleOpen((value) => !value)}
-          className="mx-auto flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.06] hover:text-white cursor-pointer"
-        >
-          {sampleOpen ? '先把这些收起来' : '也可以先看看别人留下过什么'}
-        </button>
+      <div className="mx-auto max-w-4xl px-1">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/6 pt-3">
+          <button
+            onClick={() => setSampleOpen((value) => !value)}
+            className="flex items-center gap-2 px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white cursor-pointer"
+          >
+            <span className="text-danmaku-gold/70">{sampleOpen ? '−' : '+'}</span>
+            {sampleOpen ? '先把这些轻轻收起来' : '也可以直接看一套示例结果'}
+          </button>
+
+          {secondaryAction ? <div className="text-right text-danmaku-muted/74">{secondaryAction}</div> : null}
+        </div>
 
         <AnimatePresence>
           {sampleOpen && (
             <motion.div
-              className="mt-5 grid gap-3 sm:grid-cols-2"
+              className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
-              {typeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleShowDemo(option.value)}
-                  className="group rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left transition-all hover:-translate-y-0.5 hover:border-white/18 hover:bg-white/[0.05] cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{option.icon}</span>
-                    <span className="text-sm font-medium text-white">{option.label}</span>
-                  </div>
-                  <p className="mt-2 text-xs leading-6 text-danmaku-muted/72">
-                    {option.hint}
-                  </p>
-                </button>
-              ))}
+              {typeOptions.map((option, index) => {
+                const layoutClass =
+                  index === 0
+                    ? 'sm:translate-y-0'
+                    : index === 1
+                      ? 'sm:translate-y-3'
+                      : index === 2
+                        ? 'sm:translate-y-2'
+                        : 'sm:translate-y-5'
+
+                return (
+                  <motion.button
+                    key={option.value}
+                    onClick={() => handleShowDemo(option.value)}
+                    className={`group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-all hover:-translate-y-1 hover:border-white/16 hover:bg-white/[0.045] sm:p-5 ${layoutClass}`}
+                    initial={{ opacity: 0, y: 12, rotate: index % 2 === 0 ? -1.2 : 1.2 }}
+                    animate={{ opacity: 1, y: 0, rotate: 0 }}
+                    transition={{ duration: 0.35, delay: index * 0.05, ease: 'easeOut' }}
+                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{option.icon}</span>
+                      <span className="text-sm font-medium text-white">{option.label}</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-6 text-danmaku-muted/72">
+                      {option.hint}
+                    </p>
+                  </motion.button>
+                )
+              })}
             </motion.div>
           )}
         </AnimatePresence>

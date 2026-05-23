@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 const questions = [
@@ -38,7 +38,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
       exit={{ opacity: 0 }}
       style={{ background: 'radial-gradient(ellipse at center, #141824 0%, #090a10 100%)' }}
     >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <motion.div
             key={i}
@@ -87,7 +87,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
         </motion.h1>
 
         <motion.p
-          className="mx-auto mt-8 max-w-3xl welcome-stage-quote text-[clamp(1.6rem,4vw,3.4rem)] leading-[1.22] text-white"
+          className="welcome-stage-quote mx-auto mt-8 max-w-3xl text-[clamp(1.6rem,4vw,3.4rem)] leading-[1.22] text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.05, duration: 0.8 }}
@@ -105,32 +105,40 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
         </motion.p>
 
         <motion.div
-          className="mx-auto mt-12 h-px w-28 bg-gradient-to-r from-transparent via-white/28 to-transparent"
-          initial={{ opacity: 0, scaleX: 0.5 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ delay: 1.9, duration: 0.8 }}
-        />
-
-        <motion.button
-          onClick={handleEnter}
-          className="mt-10 rounded-full border border-danmaku-accent/30 bg-danmaku-accent/18 px-10 py-3 text-sm font-medium text-danmaku-accent-soft transition-all hover:bg-danmaku-accent/28 hover:border-danmaku-accent/52 cursor-pointer"
+          className="welcome-entry mx-auto mt-14"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.15, duration: 0.65 }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          transition={{ delay: 1.9, duration: 0.85, ease: 'easeOut' }}
         >
-          今晚先留下一句
-        </motion.button>
+          <motion.div
+            className="mx-auto h-px w-32 bg-gradient-to-r from-transparent via-white/22 to-transparent"
+            initial={{ opacity: 0, scaleX: 0.65 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ delay: 2, duration: 0.8 }}
+          />
 
-        <motion.p
-          className="mt-6 text-xs text-danmaku-muted/34"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.45, duration: 0.7 }}
-        >
-          你的文字只停留在你的浏览器里
-        </motion.p>
+          <div className="relative mx-auto mt-6 flex max-w-sm flex-col items-center">
+            <div className="pointer-events-none absolute inset-x-10 top-0 h-16 rounded-full bg-[radial-gradient(circle,rgba(233,69,96,0.2)_0%,rgba(233,69,96,0.06)_42%,rgba(233,69,96,0)_76%)] blur-2xl" />
+
+            <motion.button
+              onClick={handleEnter}
+              className="relative cursor-pointer rounded-full border border-white/10 bg-[linear-gradient(135deg,rgba(72,54,98,0.72),rgba(56,46,84,0.56))] px-11 py-3 text-sm font-medium text-white shadow-[0_14px_36px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:border-danmaku-accent/26 hover:bg-[linear-gradient(135deg,rgba(86,60,116,0.82),rgba(68,52,98,0.68))]"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              今晚先留下一句
+            </motion.button>
+
+            <motion.p
+              className="mt-5 text-[12px] tracking-[0.05em] text-danmaku-muted/42"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.3, duration: 0.8 }}
+            >
+              你的文字只会停留在你的浏览器里
+            </motion.p>
+          </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   )

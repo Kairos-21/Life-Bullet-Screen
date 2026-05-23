@@ -3,16 +3,16 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 
 const moodEchoes: Record<string, string[]> = {
-  '平和': ['这条弹幕落下来的时候，空气都慢了一点。'],
-  '愉悦': ['你今天的念头像是口袋里没说出口的小烟花。'],
-  '积极': ['这句里有一股没完全熄灭的劲。'],
-  '疲惫': ['像深夜地铁最后一班车，安静但已经很累了。'],
-  '焦虑': ['像脑子里开了很多个小窗口，但都没真正关掉。'],
-  '期待': ['这句后面，藏着一点想往前走的光。'],
-  '迷茫': ['像站在岔路口，先把心情放下来认一认路。'],
-  '兴奋': ['这条弹幕有点发亮，像马上要发生什么。'],
-  '怀旧': ['这句像从旧抽屉里掉出来的一张电影票。'],
-  '低落': ['这句很轻，但落下来时其实有重量。'],
+  平和: ['这条弹幕落下来的时候，空气都慢了一点。'],
+  愉悦: ['你今天的念头像是口袋里没说出口的小烟花。'],
+  积极: ['这句里有一股还没完全熄灭的劲。'],
+  疲惫: ['像深夜地铁最后一班车，安静，但已经很累了。'],
+  焦虑: ['像脑子里开了很多个小窗口，但都没真正关掉。'],
+  期待: ['这句话后面，藏着一点想往前走的光。'],
+  迷茫: ['像站在岔路口，先把心情放下来认一认路。'],
+  兴奋: ['这条弹幕有点发亮，像马上要发生什么。'],
+  怀旧: ['这句像从旧抽屉里掉出来的一张电影票。'],
+  低落: ['这句很轻，但落下来的时候其实有重量。'],
 }
 
 const genericEchoes = [
@@ -20,6 +20,8 @@ const genericEchoes = [
   '先别急着解释它，它已经被接住了。',
   '有些话不用说得完整，也已经算说过。',
 ]
+
+const ECHO_ANIMATION_END_MS = 5000
 
 function getOpening(content: string) {
   const firstLine = content
@@ -37,26 +39,42 @@ export default function EchoStage() {
   const contentType = useAppStore((s) => s.contentType)
   const setViewStage = useAppStore((s) => s.setViewStage)
   const [countdown, setCountdown] = useState(5)
+  const [countdownStarted, setCountdownStarted] = useState(false)
 
   const echoes = useMemo(() => {
     const mood = result?.diagnosis?.mood ?? ''
     const moodLine = Object.entries(moodEchoes).find(([key]) => mood.includes(key) || key.includes(mood))?.[1]?.[0]
     const opening = getOpening(content)
     const sourceLabel =
-      contentType === 'chat' ? '聊天边角' :
-      contentType === 'diary' ? '日记空白处' :
-      contentType === 'voice' ? '深夜语音碎片' :
-      '没发出去的朋友圈'
+      contentType === 'chat'
+        ? '聊天边角'
+        : contentType === 'diary'
+          ? '日记空白页'
+          : contentType === 'voice'
+            ? '深夜语音碎片'
+            : '没发出去的朋友圈'
 
     return [
       `“${opening}”`,
       moodLine ?? genericEchoes[1],
-      `它先被放进了今天的${sourceLabel}里。`,
+      `它先被轻轻放进了今天的 ${sourceLabel} 里。`,
     ]
   }, [content, contentType, result])
 
   useEffect(() => {
     setCountdown(5)
+    setCountdownStarted(false)
+
+    const startTimer = window.setTimeout(() => {
+      setCountdownStarted(true)
+    }, ECHO_ANIMATION_END_MS)
+
+    return () => window.clearTimeout(startTimer)
+  }, [echoes])
+
+  useEffect(() => {
+    if (!countdownStarted) return
+
     const timer = window.setInterval(() => {
       setCountdown((current) => {
         if (current <= 1) {
@@ -69,7 +87,7 @@ export default function EchoStage() {
     }, 1000)
 
     return () => window.clearInterval(timer)
-  }, [setViewStage])
+  }, [countdownStarted, setViewStage])
 
   return (
     <section className="mx-auto flex min-h-[68vh] w-full max-w-4xl items-center justify-center px-4">
@@ -87,9 +105,11 @@ export default function EchoStage() {
           {echoes.map((line, index) => (
             <motion.p
               key={`${line}-${index}`}
-              className={index === 0
-                ? 'text-2xl sm:text-3xl leading-relaxed text-white'
-                : 'text-base sm:text-lg leading-8 text-danmaku-text-dim/85'}
+              className={
+                index === 0
+                  ? 'text-2xl leading-relaxed text-white sm:text-3xl'
+                  : 'text-base leading-8 text-danmaku-text-dim/85 sm:text-lg'
+              }
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.45 + index * 0.95, ease: 'easeOut' }}
@@ -123,12 +143,14 @@ export default function EchoStage() {
         >
           <button
             onClick={() => setViewStage('revealed')}
-            className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+            className="cursor-pointer rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
           >
             想继续的话，就往下看看
           </button>
           <span className="text-xs text-danmaku-muted/38">
-            大约 {countdown}s 后，它也会自己慢慢往下走
+            {countdownStarted
+              ? `大约 ${countdown}s 后，它也会自己慢慢往下走`
+              : '等这几句慢慢落定，才会开始 5s 倒计时'}
           </span>
         </motion.div>
       </div>

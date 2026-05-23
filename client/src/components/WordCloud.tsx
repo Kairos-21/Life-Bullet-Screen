@@ -27,6 +27,20 @@ interface ParticlePlacement {
   color: string
 }
 
+interface BubblePlacement {
+  text: string
+  weight: number
+  size: number
+  left: number
+  top: number
+  driftX: number
+  driftY: number
+  duration: number
+  delay: number
+  color: string
+  opacity: number
+}
+
 interface GalaxyPlacement {
   text: string
   weight: number
@@ -164,6 +178,46 @@ function buildParticlePlacements(words: { text: string; weight: number }[], maxW
   return placements
 }
 
+function buildBubblePlacements(words: { text: string; weight: number }[], maxWeight: number): BubblePlacement[] {
+  const anchors = [
+    { x: 0.1, y: 0.22 },
+    { x: 0.28, y: 0.18 },
+    { x: 0.47, y: 0.2 },
+    { x: 0.67, y: 0.17 },
+    { x: 0.84, y: 0.23 },
+    { x: 0.18, y: 0.47 },
+    { x: 0.38, y: 0.42 },
+    { x: 0.58, y: 0.48 },
+    { x: 0.78, y: 0.43 },
+    { x: 0.13, y: 0.73 },
+    { x: 0.31, y: 0.79 },
+    { x: 0.52, y: 0.75 },
+    { x: 0.72, y: 0.79 },
+    { x: 0.88, y: 0.69 },
+  ]
+
+  return [...words].sort((a, b) => b.weight - a.weight).map((word, index) => {
+    const ratio = word.weight / maxWeight
+    const anchor = anchors[index % anchors.length]
+    const offsetX = ((((index + 1) * 37) % 100) / 100 - 0.5) * 5
+    const offsetY = ((((index + 1) * 61) % 100) / 100 - 0.5) * 4
+
+    return {
+      text: word.text,
+      weight: word.weight,
+      size: 13 + ratio * 28,
+      left: anchor.x * 100 + offsetX,
+      top: anchor.y * 100 + offsetY,
+      driftX: ((index % 5) - 2) * (8 + ratio * 12),
+      driftY: ((index % 4) - 1.5) * (6 + ratio * 10),
+      duration: 8 + (index % 4) * 1.6 - ratio * 0.8,
+      delay: index * 0.18,
+      color: COLORS[index % COLORS.length],
+      opacity: 0.58 + ratio * 0.42,
+    }
+  })
+}
+
 function buildGalaxyPlacements(words: { text: string; weight: number }[], maxWeight: number): GalaxyPlacement[] {
   const lanes = [0.12, 0.24, 0.36, 0.48, 0.62, 0.76, 0.88]
   const laneOrder = [3, 1, 5, 0, 6, 2, 4]
@@ -226,43 +280,46 @@ function ParticlesCloud({ words, maxWeight }: { words: { text: string; weight: n
 }
 
 function BubblesCloud({ words, maxWeight }: { words: { text: string; weight: number }[]; maxWeight: number }) {
+  const placements = useMemo(() => buildBubblePlacements(words, maxWeight), [words, maxWeight])
+
   return (
-    <div className="flex min-h-72 flex-wrap content-center items-center justify-center gap-3 p-4">
-      {words.map((w, i) => {
-        const ratio = w.weight / maxWeight
-        const size = 13 + ratio * 28
-        const alpha = 0.55 + ratio * 0.45
-        const driftX = ((i % 5) - 2) * (3 + ratio * 5)
-        const driftY = ((i % 4) - 1.5) * (2 + ratio * 4)
+    <div className="relative min-h-72 overflow-hidden px-4 py-6">
+      {placements.map((w, i) => {
+        const alpha = w.opacity
         return (
           <motion.span
-            key={i}
-            className="inline-block cursor-default select-none rounded-full border px-4 py-1.5 font-bold"
+            key={`${w.text}-${i}`}
+            className="absolute inline-block cursor-default select-none rounded-full border px-4 py-1.5 font-bold whitespace-nowrap"
             style={{
-              fontSize: `${size}px`,
-              color: ratio > 0.6 ? '#fff' : COLORS[i % COLORS.length],
-              background: `linear-gradient(135deg, ${COLORS[i % COLORS.length]}${Math.round(alpha * 60).toString(16)}, ${COLORS[(i + 1) % COLORS.length]}${Math.round(alpha * 30).toString(16)})`,
-              borderColor: `${COLORS[i % COLORS.length]}40`,
-              boxShadow: `0 0 ${12 + ratio * 20}px ${COLORS[i % COLORS.length]}${Math.round(alpha * 50).toString(16)}`,
+              fontSize: `${w.size}px`,
+              color: w.weight / maxWeight > 0.62 ? '#fff' : w.color,
+              background: `linear-gradient(135deg, ${w.color}${Math.round(alpha * 60).toString(16)}, ${COLORS[(i + 1) % COLORS.length]}${Math.round(alpha * 28).toString(16)})`,
+              borderColor: `${w.color}40`,
+              boxShadow: `0 0 ${14 + (w.weight / maxWeight) * 22}px ${w.color}${Math.round(alpha * 48).toString(16)}`,
               opacity: alpha,
+              left: `${w.left}%`,
+              top: `${w.top}%`,
+              transform: 'translate(-50%, -50%)',
             }}
-            initial={{ opacity: 0, y: 20, scale: 0.6 }}
+            initial={{ opacity: 0, y: 22, scale: 0.72 }}
             animate={{
-              opacity: [alpha * 0.78, alpha, alpha * 0.82],
-              x: [0, driftX, 0, -driftX * 0.65, 0],
-              y: [0, -10 + driftY, -4, -12 - driftY * 0.35, 0],
-              scale: [1, 1.04, 1, 0.985, 1],
+              opacity: [alpha * 0.56, alpha, alpha * 0.72, alpha],
+              x: [0, w.driftX, -w.driftX * 0.42, w.driftX * 0.18, 0],
+              y: [0, -16 + w.driftY, 8, -12 - w.driftY * 0.4, 0],
+              scale: [0.98, 1.07, 1, 1.04, 0.99],
+              rotate: [0, (i % 2 === 0 ? 1.8 : -1.8), 0, (i % 2 === 0 ? -1.2 : 1.2), 0],
             }}
             transition={{
-              opacity: { duration: 4.8 + (i % 3), delay: i * 0.08, repeat: Infinity, ease: 'easeInOut' },
-              x: { duration: 9 + (i % 4) * 1.2, delay: i * 0.05, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: 7.8 + (i % 5), delay: i * 0.06, repeat: Infinity, ease: 'easeInOut' },
-              scale: { duration: 6.6 + (i % 4), delay: i * 0.05, repeat: Infinity, ease: 'easeInOut' },
+              opacity: { duration: w.duration - 1.2, delay: w.delay, repeat: Infinity, ease: 'easeInOut' },
+              x: { duration: w.duration + 2.8, delay: w.delay * 0.6, repeat: Infinity, ease: 'easeInOut' },
+              y: { duration: w.duration, delay: w.delay, repeat: Infinity, ease: 'easeInOut' },
+              scale: { duration: w.duration - 0.8, delay: w.delay * 0.4, repeat: Infinity, ease: 'easeInOut' },
+              rotate: { duration: w.duration + 1.5, delay: w.delay * 0.5, repeat: Infinity, ease: 'easeInOut' },
             }}
             whileHover={{
               scale: 1.25,
               opacity: 1,
-              boxShadow: `0 0 30px ${COLORS[i % COLORS.length]}80`,
+              boxShadow: `0 0 34px ${w.color}80`,
               transition: { type: 'spring', stiffness: 400, damping: 12 },
             }}
           >
@@ -301,16 +358,40 @@ function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: numb
             }}
             initial={{ opacity: 0, scale: 0.74 }}
             animate={{
-              opacity: [0, word.opacity * 0.62, word.opacity, word.opacity * 0.4, 0],
-              y: [0, -112, -248, -392],
-              x: [0, word.sway, -word.sway * 0.7, word.sway * 0.35],
-              scale: [0.74, 0.92, 1.06, 1.14],
+              opacity: [0, word.opacity * 0.4, word.opacity * 0.88, word.opacity * 0.58, 0],
+              y: [0, -84, -192, -304, -420],
+              x: [0, word.sway * 0.45, word.sway, word.sway * 0.2, -word.sway * 0.28],
+              scale: [0.74, 0.88, 0.99, 1.08, 1.16],
             }}
             transition={{
-              opacity: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeInOut' },
-              x: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeInOut' },
-              y: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeOut' },
-              scale: { duration: word.duration, delay: word.delay, repeat: Infinity, ease: 'easeOut' },
+              opacity: {
+                duration: word.duration,
+                delay: word.delay,
+                repeat: Infinity,
+                ease: 'linear',
+                times: [0, 0.16, 0.42, 0.76, 1],
+              },
+              x: {
+                duration: word.duration,
+                delay: word.delay,
+                repeat: Infinity,
+                ease: 'linear',
+                times: [0, 0.24, 0.52, 0.78, 1],
+              },
+              y: {
+                duration: word.duration,
+                delay: word.delay,
+                repeat: Infinity,
+                ease: 'linear',
+                times: [0, 0.18, 0.46, 0.74, 1],
+              },
+              scale: {
+                duration: word.duration,
+                delay: word.delay,
+                repeat: Infinity,
+                ease: 'linear',
+                times: [0, 0.2, 0.48, 0.78, 1],
+              },
             }}
             whileHover={{ scale: 1.08, opacity: 1, transition: { duration: 0.2 } }}
           >

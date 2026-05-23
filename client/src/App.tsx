@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from './store/appStore'
 import WelcomeOverlay from './components/WelcomeOverlay'
@@ -9,7 +9,7 @@ import ProviderSelector from './components/ProviderSelector'
 import ApiKeyInput from './components/ApiKeyInput'
 import AnalyzeButton from './components/AnalyzeButton'
 import EchoStage from './components/EchoStage'
-import DanmakuView from './components/DanmakuView'
+import DanmakuStage from './components/DanmakuStage'
 import WordCloud from './components/WordCloud'
 import DiagnosisReport from './components/DiagnosisReport'
 import MovieScene from './components/MovieScene'
@@ -49,6 +49,67 @@ function getFarewell(mood: string): string {
   return fallbackFarewell[Math.floor(Math.random() * fallbackFarewell.length)]
 }
 
+function AutoFitLine({ text }: { text: string }) {
+  const wrapperRef = useRef<HTMLSpanElement>(null)
+  const textRef = useRef<HTMLSpanElement>(null)
+  const measureRef = useRef<HTMLSpanElement>(null)
+  const [shouldShrink, setShouldShrink] = useState(false)
+  const [scale, setScale] = useState(1)
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const wrapper = wrapperRef.current
+      const inner = textRef.current
+      const measureNode = measureRef.current
+      if (!wrapper || !inner || !measureNode) return
+
+      const available = wrapper.clientWidth
+      const needed = measureNode.scrollWidth
+
+      if (!available || !needed) return
+
+      const ratio = available / needed
+      if (ratio >= 1) {
+        setShouldShrink(false)
+        setScale(1)
+        return
+      }
+
+      if (ratio >= 0.84) {
+        setShouldShrink(true)
+        setScale(Math.max(0.84, ratio))
+        return
+      }
+
+      setShouldShrink(false)
+      setScale(1)
+    }
+
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [text])
+
+  return (
+    <span ref={wrapperRef} className="block w-full overflow-visible">
+      <span
+        ref={measureRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute opacity-0 whitespace-nowrap"
+      >
+        {text}
+      </span>
+      <span
+        ref={textRef}
+        className={shouldShrink ? 'inline-block whitespace-nowrap' : 'inline'}
+        style={shouldShrink ? { transform: `scale(${scale})`, transformOrigin: 'center center' } : undefined}
+      >
+        {text}
+      </span>
+    </span>
+  )
+}
+
 export default function App() {
   const status = useAppStore((s) => s.status)
   const error = useAppStore((s) => s.error)
@@ -76,15 +137,6 @@ export default function App() {
     }, 3200)
     return () => window.clearInterval(timer)
   }, [])
-
-  useEffect(() => {
-    if (viewStage === 'echo' && hasResult && status === 'success') {
-      const timer = window.setTimeout(() => {
-        setViewStage('revealed')
-      }, 6200)
-      return () => window.clearTimeout(timer)
-    }
-  }, [hasResult, setViewStage, status, viewStage])
 
   useEffect(() => {
     if (hasResult && status === 'success' && mood) {
@@ -138,7 +190,7 @@ export default function App() {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.5 }}
                     >
-                      {rotatingLines[lineIndex]}
+                      <AutoFitLine text={rotatingLines[lineIndex]} />
                     </motion.p>
                     <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-danmaku-text-dim/74 sm:text-base">
                       这里不是分析工具，也不是严肃倾诉室。它更像一块会发光的夜色，让一闪而过的念头先停一下。
@@ -146,7 +198,16 @@ export default function App() {
                   </div>
 
                   <div className="mx-auto mt-8 max-w-4xl">
-                    <InputPanel />
+                    <InputPanel
+                      secondaryAction={!shouldRevealControls ? (
+                        <button
+                          onClick={() => setShowControls(true)}
+                          className="cursor-pointer px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white"
+                        >
+                          等这句慢慢落稳，再决定怎么显影
+                        </button>
+                      ) : undefined}
+                    />
                   </div>
 
                   <AnimatePresence>
@@ -175,8 +236,8 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  {!shouldRevealControls && (
-                    <div className="mt-10 text-center">
+                  {false && !shouldRevealControls && (
+                    <div className="mx-auto mt-6 flex max-w-4xl justify-end px-2">
                       <button
                         onClick={() => setShowControls(true)}
                         className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
@@ -225,7 +286,8 @@ export default function App() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
-                  <div className="mx-auto mb-8 max-w-3xl text-center">
+                  <div className="mx-auto mb-8 flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="max-w-3xl">
                     <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
                     <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
                       你刚刚留下的那些字，已经慢慢长成了今天的样子。
@@ -234,7 +296,9 @@ export default function App() {
                       这里会先映出一个最像此刻的侧影，后面那些弹幕、词和电影感，只是慢慢跟上来。
                     </p>
 
-                    <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
                       {isSampleMode && (
                         <span className="rounded-full border border-danmaku-gold/30 bg-danmaku-gold/15 px-3 py-1 text-xs text-danmaku-gold">
                           当前是示例显影
@@ -257,7 +321,7 @@ export default function App() {
 
                   <div className="space-y-8">
                     <DiagnosisReport />
-                    <DanmakuView />
+                    <DanmakuStage />
                     <WordCloud />
                     <MovieScene />
                   </div>

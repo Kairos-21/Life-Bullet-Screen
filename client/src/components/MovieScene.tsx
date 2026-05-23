@@ -26,14 +26,14 @@ export default function MovieScene() {
     <section className="overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(180deg,rgba(18,19,28,0.98),rgba(8,9,14,1))] shadow-[0_28px_80px_rgba(0,0,0,0.28)]">
       <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.03] px-5 py-4">
         <h3 className="text-sm font-semibold text-danmaku-text">
-          <span className="mr-2 text-danmaku-gold">◧</span>
+          <span className="mr-2 text-danmaku-gold">▣</span>
           如果你是电影角色
         </h3>
         <button
           onClick={handleExport}
-          className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-xs text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
+          className="cursor-pointer px-1 py-1 text-xs text-danmaku-muted/76 transition-colors hover:text-white"
         >
-          保存这张剧照
+          保存一帧
         </button>
       </div>
 

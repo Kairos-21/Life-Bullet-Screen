@@ -82,6 +82,31 @@ body.mood-bg-active::after {
   text-wrap: balance;
 }
 
+@keyframes danmaku-stage-float {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, var(--drift-start, 0px), 0) scale(var(--danmaku-scale, 1));
+  }
+  8% {
+    opacity: 1;
+  }
+  52% {
+    opacity: 1;
+    transform: translate3d(-56vw, calc((var(--drift-start, 0px) + var(--drift-end, 0px)) / 2), 0) scale(var(--danmaku-scale, 1));
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(-116vw - 100%), var(--drift-end, 0px), 0) scale(var(--danmaku-scale, 1));
+  }
+}
+
+.danmaku-stage-item {
+  will-change: transform, opacity;
+  animation-name: danmaku-stage-float;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .emotion-input-shell {
   position: relative;
   overflow: hidden;
