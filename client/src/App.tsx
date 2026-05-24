@@ -116,11 +116,8 @@ export default function App() {
   const result = useAppStore((s) => s.result)
   const viewStage = useAppStore((s) => s.viewStage)
   const setViewStage = useAppStore((s) => s.setViewStage)
-  const content = useAppStore((s) => s.content)
   const reset = useAppStore((s) => s.reset)
-  const isSampleMode = useAppStore((s) => s.isSampleMode)
   const [welcomeDone, setWelcomeDone] = useState(false)
-  const [showControls, setShowControls] = useState(false)
   const [lineIndex, setLineIndex] = useState(0)
 
   const hasResult = result !== null
@@ -134,7 +131,7 @@ export default function App() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setLineIndex((current) => (current + 1) % rotatingLines.length)
-    }, 3200)
+    }, 5000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -154,11 +151,10 @@ export default function App() {
 
   const handleReset = () => {
     reset()
-    setShowControls(false)
   }
 
   const shouldShowComposer = !hasResult && viewStage !== 'echo'
-  const shouldRevealControls = content.trim().length >= 12 || showControls
+  const shouldRevealControls = true
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -198,16 +194,7 @@ export default function App() {
                   </div>
 
                   <div className="mx-auto mt-8 max-w-4xl">
-                    <InputPanel
-                      secondaryAction={!shouldRevealControls ? (
-                        <button
-                          onClick={() => setShowControls(true)}
-                          className="cursor-pointer px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white"
-                        >
-                          等这句慢慢落稳，再决定怎么显影
-                        </button>
-                      ) : undefined}
-                    />
+                    <InputPanel />
                   </div>
 
                   <AnimatePresence>
@@ -235,17 +222,6 @@ export default function App() {
                       </motion.section>
                     )}
                   </AnimatePresence>
-
-                  {false && !shouldRevealControls && (
-                    <div className="mx-auto mt-6 flex max-w-4xl justify-end px-2">
-                      <button
-                        onClick={() => setShowControls(true)}
-                        className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
-                      >
-                        等这句慢慢落稳，再决定怎么显影
-                      </button>
-                    </div>
-                  )}
 
                   {error && (
                     <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-center text-sm text-red-300">
@@ -298,19 +274,6 @@ export default function App() {
 
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                      {isSampleMode && (
-                        <span className="rounded-full border border-danmaku-gold/30 bg-danmaku-gold/15 px-3 py-1 text-xs text-danmaku-gold">
-                          当前是示例显影
-                        </span>
-                      )}
-                      <button
-                        onClick={handleReset}
-                        className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
-                      >
-                        如果还想，也可以再留一句
-                      </button>
-                    </div>
                   </div>
 
                   {error && (

@@ -34,13 +34,13 @@ const typeOptions: { value: ContentType; label: string; icon: string; hint: stri
 ]
 
 const sampleTexts: Record<ContentType, string> = {
-  chat: `室友：今天又加班到十点，累死了
+  chat: `室友：今天又加班到十点，累死了？
 我：我也是，感觉最近好像总在假装自己还行
-室友：你说我们这么拼到底图什么
+室友：你说我们这么拼到底图什么？
 我：不知道，可能是习惯了
 室友：周末要不要出去走走
 我：可以啊，换个心情也好`,
-  diary: `今天又是普通的一天。白天忙得顾不上自己，晚上安静下来以后才发现，原来脑子里还有那么多没说出来的话。
+  diary: `今天又是普通的一天。白天忙得顾不上自己，晚上安静下来以后才发现，原来脑海里还有那么多没说出来的话。
 
 有时候会觉得自己像在自动播放，按时回应、按时工作、按时说“没事”。但真的没事吗，好像也不是。`,
   voice: `其实我也不知道自己在想什么，就是突然觉得好累。不是那种立刻想哭的累，是一种一直醒着、一直撑着、一直没有真正放松过的累。`,
@@ -49,7 +49,7 @@ const sampleTexts: Record<ContentType, string> = {
 }
 
 const helperLines = [
-  '先别整理，想到哪写到哪。',
+  '先别整理，想到哪就写到哪。',
   '一句也行，不用把它说得很完整。',
   '你不需要把情绪包装成正确答案。',
 ]
@@ -64,21 +64,29 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
 
   const [isRecording, setIsRecording] = useState(false)
   const [sampleOpen, setSampleOpen] = useState(false)
+  const [isSampleFilled, setIsSampleFilled] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   const activeType = typeOptions.find((option) => option.value === contentType) ?? typeOptions[0]
   const hasContent = content.trim().length > 0
-  const longEnough = content.trim().length >= 12
-
   const helperLine = useMemo(() => {
-    if (content.trim().length > 45) return '好，就先这样。让这条弹幕自己发光。'
+    if (content.trim().length > 45) return '好，先这样。让这条弹幕自己慢慢发光。'
     if (content.trim().length > 0) return '嗯，这句先放这儿。'
     return helperLines[Math.floor(Math.random() * helperLines.length)]
   }, [content])
 
   const fillSample = () => {
     setContent(sampleTexts[contentType])
+    setIsSampleFilled(true)
     setViewStage('composing')
+  }
+
+  const handleTypeSelect = (nextType: ContentType) => {
+    setContentType(nextType)
+    if (isSampleFilled) {
+      setContent(sampleTexts[nextType])
+      setViewStage('composing')
+    }
   }
 
   const startRecording = useCallback(() => {
@@ -101,6 +109,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
       }
       if (final) {
         setContent(content + (content ? '\n' : '') + final)
+        setIsSampleFilled(false)
         setViewStage('composing')
       }
     }
@@ -135,10 +144,10 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
         <div className="mb-6 text-center">
           <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">A Place To Put It Down</p>
           <h2 className="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl">
-            此刻脑子飘过什么？
+            此刻脑子里飘过什么？
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-danmaku-text-dim/82 sm:text-base">
-            一句吐槽、一点 emo、一段自嘲、一个没法发朋友圈的念头，都可以先丢进来。
+            一句吐槽、一点 emo、一段自语、一个没法发朋友圈的念头，都可以先丢进来。
           </p>
         </div>
 
@@ -156,6 +165,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             onFocus={() => setViewStage('composing')}
             onChange={(e) => {
               setContent(e.target.value)
+              setIsSampleFilled(false)
               if (e.target.value.trim()) setViewStage('composing')
             }}
             placeholder={'例如：今天又假装很忙。\n\n或者：突然觉得好累，但也不知道该跟谁说。'}
@@ -167,9 +177,11 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             <div className="flex items-center gap-3 text-xs text-danmaku-muted">
               <button
                 onClick={fillSample}
-                className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
+                className="group inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent px-1 py-1 text-sm text-danmaku-muted/76 transition-colors hover:text-white"
               >
-                把一段示例填进来
+                <span className="text-danmaku-gold/68 transition-colors group-hover:text-danmaku-gold">+</span>
+                <span>把一段示例填进来</span>
+                <span className="text-white/26 transition-all group-hover:translate-x-0.5 group-hover:text-white/48">→</span>
               </button>
             </div>
 
@@ -196,47 +208,39 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
           </p>
         </div>
 
-        <AnimatePresence>
-          {longEnough && (
-            <motion.div
-              className="mt-5 space-y-4"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              <div className="flex flex-wrap justify-center gap-2">
-                {typeOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setContentType(option.value)}
-                    className={`rounded-full px-4 py-2 text-sm transition-all cursor-pointer ${
-                      contentType === option.value
-                        ? 'bg-danmaku-accent text-white shadow-[0_10px_24px_rgba(233,69,96,0.22)]'
-                        : 'bg-white/[0.04] text-danmaku-text-dim hover:bg-white/[0.08] hover:text-white'
-                    }`}
-                  >
-                    <span className="mr-2">{option.icon}</span>
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+        <div className="mt-5 space-y-4">
+          <div className="flex flex-wrap justify-center gap-2">
+            {typeOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleTypeSelect(option.value)}
+                className={`rounded-full px-4 py-2 text-sm transition-all cursor-pointer ${
+                  contentType === option.value
+                    ? 'bg-danmaku-accent text-white shadow-[0_10px_24px_rgba(233,69,96,0.22)]'
+                    : 'bg-white/[0.04] text-danmaku-text-dim hover:bg-white/[0.08] hover:text-white'
+                }`}
+              >
+                <span className="mr-2">{option.icon}</span>
+                {option.label}
+              </button>
+            ))}
+          </div>
 
-              <p className="text-center text-sm text-danmaku-muted/70">
-                它现在更像 <span className="text-danmaku-text">{activeType.hint}</span>
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <p className="text-center text-sm text-danmaku-muted/70">
+            它现在更像 <span className="text-danmaku-text">{activeType.hint}</span>
+          </p>
+        </div>
       </div>
 
       <div className="mx-auto max-w-4xl px-1">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/6 pt-3">
+        <div className={`flex flex-wrap items-center gap-4 border-t border-white/6 pt-3 ${secondaryAction ? 'justify-between' : 'justify-center'}`}>
           <button
             onClick={() => setSampleOpen((value) => !value)}
-            className="flex items-center gap-2 px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white cursor-pointer"
+            className="group relative flex items-center gap-2 px-1 py-1 text-sm font-medium text-danmaku-text-dim/82 transition-colors hover:text-white cursor-pointer"
           >
-            <span className="text-danmaku-gold/70">{sampleOpen ? '−' : '+'}</span>
+            <span className="pointer-events-none absolute left-1/2 top-1/2 h-8 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-danmaku-gold/14 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="pointer-events-none absolute left-1/2 top-1/2 h-5 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-danmaku-accent/10 blur-lg transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="relative text-danmaku-gold/82 transition-transform duration-200 group-hover:scale-110">{sampleOpen ? '−' : '+'}</span>
             {sampleOpen ? '先把这些轻轻收起来' : '也可以直接看一套示例结果'}
           </button>
 

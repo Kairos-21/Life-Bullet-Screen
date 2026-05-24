@@ -485,7 +485,7 @@ export default function WordCloud() {
       {missingWord && (
         <div className="border-t border-white/5 px-5 py-3 text-right">
           <span className="text-xs italic text-danmaku-muted/34">
-            你很少提到：{missingWord}
+            你很少提到：<span className="font-semibold text-danmaku-text-dim/78 not-italic">{missingWord}</span>
           </span>
         </div>
       )}
