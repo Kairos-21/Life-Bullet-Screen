@@ -29,14 +29,14 @@ const farewellMessages: Record<string, string[]> = {
   疲惫: ['今晚先到这里吧。你已经撑了很久。'],
   焦虑: ['先慢下来一点。不是所有答案都要今晚交卷。'],
   期待: ['愿意期待，本身就说明你还在往明天看。'],
-  迷茫: ['找不到方向的时候，也可以先照顾好脚下这一小步。'],
+  迷茫: ['找不到方向的时候，也可以先照顾好脚下这一步。'],
   兴奋: ['这股劲挺亮的，别让它只停在脑海里。'],
   怀旧: ['那些旧时刻还暖，是因为你真的在那里生活过。'],
   低落: ['先坐一会儿吧。这些字会替你把灯留着。'],
 }
 
 const fallbackFarewell = [
-  '你写下来的，不只是文字，也是今天的你。',
+  '你写下来的，不只是一段文字，也是今天的你。',
   '说不清也没关系，能留下来就已经轻一点了。',
   '这些字会在这里待一会儿，等你慢慢走出去。',
 ]
@@ -117,11 +117,8 @@ export default function App() {
   const result = useAppStore((s) => s.result)
   const viewStage = useAppStore((s) => s.viewStage)
   const setViewStage = useAppStore((s) => s.setViewStage)
-  const content = useAppStore((s) => s.content)
   const reset = useAppStore((s) => s.reset)
-  const isSampleMode = useAppStore((s) => s.isSampleMode)
   const [welcomeDone, setWelcomeDone] = useState(false)
-  const [showControls, setShowControls] = useState(false)
   const [lineIndex, setLineIndex] = useState(0)
 
   const hasResult = result !== null
@@ -135,7 +132,7 @@ export default function App() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setLineIndex((current) => (current + 1) % rotatingLines.length)
-    }, 4600)
+    }, 5000)
     return () => window.clearInterval(timer)
   }, [])
 
@@ -155,11 +152,9 @@ export default function App() {
 
   const handleReset = () => {
     reset()
-    setShowControls(false)
   }
 
   const shouldShowComposer = !hasResult && viewStage !== 'echo'
-  const shouldRevealControls = content.trim().length >= 12 || showControls
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -198,43 +193,29 @@ export default function App() {
                   </div>
 
                   <div className="mx-auto mt-8 max-w-4xl">
-                    <InputPanel
-                      secondaryAction={!shouldRevealControls ? (
-                        <button
-                          onClick={() => setShowControls(true)}
-                          className="cursor-pointer px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white"
-                        >
-                          写够一点，再选择怎么显影
-                        </button>
-                      ) : undefined}
-                    />
+                    <InputPanel />
                   </div>
 
-                  <AnimatePresence>
-                    {shouldRevealControls && (
-                      <motion.section
-                        className="mx-auto mt-12 max-w-3xl rounded-[28px] border border-white/10 bg-white/[0.03] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-sm"
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.35, ease: 'easeOut' }}
-                      >
-                        <div className="text-center">
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">回声方式</p>
-                          <h2 className="mt-3 text-xl font-semibold text-white">这一次，要读到什么程度？</h2>
-                          <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-danmaku-text-dim/75">
-                            本地模式适合快速看个轮廓。想要更细的弹幕、侧影和电影感，再打开自己的 API Key。
-                          </p>
-                        </div>
+                  <motion.section
+                    className="mx-auto mt-12 max-w-3xl rounded-[28px] border border-white/10 bg-white/[0.03] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                  >
+                    <div className="text-center">
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">回声方式</p>
+                      <h2 className="mt-3 text-xl font-semibold text-white">这一次，要读到什么程度？</h2>
+                      <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-danmaku-text-dim/75">
+                        本地模式适合快速看个轮廓。想要更细的弹幕、侧影和电影感，再打开自己的 API Key。
+                      </p>
+                    </div>
 
-                        <div className="mt-6 space-y-5">
-                          <ProviderSelector />
-                          <ApiKeyInput />
-                          <AnalyzeButton />
-                        </div>
-                      </motion.section>
-                    )}
-                  </AnimatePresence>
+                    <div className="mt-6 space-y-5">
+                      <ProviderSelector />
+                      <ApiKeyInput />
+                      <AnalyzeButton />
+                    </div>
+                  </motion.section>
 
                   {error && (
                     <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-center text-sm text-red-300">
@@ -277,21 +258,12 @@ export default function App() {
                 >
                   <div className="mx-auto mb-8 flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-3xl">
-                    <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
-                      先看弹幕经过，再看它们留下什么。
-                    </h2>
+                      <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
+                        先看弹幕经过，再看它们留下什么。
+                      </h2>
                       <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
                         让那些话先热闹地经过你，再慢慢落成侧影、反复出现的词，和最后那一帧电影。
                       </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                      <button
-                        onClick={handleReset}
-                        className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
-                      >
-                        再留一句也可以
-                      </button>
                     </div>
                   </div>
 

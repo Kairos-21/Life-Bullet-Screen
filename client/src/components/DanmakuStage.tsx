@@ -17,7 +17,6 @@ export default function DanmakuStage() {
 
   const mood = result?.diagnosis?.mood ?? null
   const items = useMemo(() => buildDanmakuStageItems(result?.danmaku ?? [], mood), [mood, result?.danmaku])
-  const gentle = isGentleMood(mood)
 
   useEffect(() => {
     if (paused || !items.length) return
@@ -101,7 +100,7 @@ export default function DanmakuStage() {
 
         <div
           className={`relative mt-6 min-h-[26rem] overflow-hidden rounded-[34px] ${
-            gentle ? 'bg-[linear-gradient(180deg,rgba(9,10,16,0.58),rgba(7,8,14,0.82))]' : 'bg-[linear-gradient(180deg,rgba(8,9,15,0.34),rgba(8,9,15,0.78))]'
+            isGentleMood(mood) ? 'bg-[linear-gradient(180deg,rgba(9,10,16,0.58),rgba(7,8,14,0.82))]' : 'bg-[linear-gradient(180deg,rgba(8,9,15,0.34),rgba(8,9,15,0.78))]'
           } sm:min-h-[32rem]`}
         >
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_18%,transparent_82%,rgba(255,255,255,0.025))]" />
@@ -134,12 +133,6 @@ export default function DanmakuStage() {
               {item.text}
             </span>
           ))}
-
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-6">
-            <div className="rounded-full border border-white/8 bg-black/18 px-4 py-1.5 text-[11px] tracking-[0.24em] text-danmaku-muted/48 backdrop-blur-sm">
-              {gentle ? '这一轮会慢一点' : '先让弹幕经过'}
-            </div>
-          </div>
         </div>
       </div>
     </section>
