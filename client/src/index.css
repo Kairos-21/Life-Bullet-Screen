@@ -157,6 +157,50 @@ body.mood-bg-active::after {
   animation: stagger-in 0.65s ease-out forwards;
 }
 
+@keyframes finale-danmaku-sweep {
+  0% {
+    opacity: 0;
+    transform: translate3d(108vw, 0, 0) scale(0.96);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-124vw, 0, 0) scale(1.05);
+  }
+}
+
+@keyframes finale-danmaku-reverse-sweep {
+  0% {
+    opacity: 0;
+    transform: translate3d(-118vw, 0, 0) scale(0.94);
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(120vw, 0, 0) scale(1.04);
+  }
+}
+
+.finale-danmaku,
+.finale-danmaku-reverse {
+  display: inline-block;
+  will-change: transform, opacity;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+.finale-danmaku {
+  animation-name: finale-danmaku-sweep;
+}
+
+.finale-danmaku-reverse {
+  animation-name: finale-danmaku-reverse-sweep;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }

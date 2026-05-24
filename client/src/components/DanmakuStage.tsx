@@ -53,7 +53,6 @@ export default function DanmakuStage() {
         <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-2">
           <div className="flex flex-wrap items-center gap-3">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.34em] text-danmaku-muted/45">Danmaku Field</p>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-white">
                 <h3 className="text-xl font-medium sm:text-2xl">人生弹幕</h3>
                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-danmaku-text-dim/82">
@@ -73,7 +72,7 @@ export default function DanmakuStage() {
               </div>
             </div>
             <p className="max-w-lg text-sm leading-7 text-danmaku-text-dim/72">
-              这次先把弹幕从播放器小窗里放出来，让它更像一片经过你身边的空气。
+              先不用解释它们。让这些弹幕从眼前经过，看看哪一句像是替你说出了半句。
             </p>
           </div>
 
@@ -138,7 +137,7 @@ export default function DanmakuStage() {
 
           <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-6">
             <div className="rounded-full border border-white/8 bg-black/18 px-4 py-1.5 text-[11px] tracking-[0.24em] text-danmaku-muted/48 backdrop-blur-sm">
-              {gentle ? '今晚这片弹幕会慢一点飘过去' : '它现在终于更像真正会经过你的弹幕了'}
+              {gentle ? '这一轮会慢一点' : '先让弹幕经过'}
             </div>
           </div>
         </div>

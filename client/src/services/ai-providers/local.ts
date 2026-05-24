@@ -27,7 +27,7 @@ const genreMap = ['文艺片', '黑色幽默', '治愈系', '热血成长', '悬
 function pseudoAnalysis(text: string, contentType: ContentType): AnalysisResult {
   const len = text.length
   const words = text
-    .replace(/[，。！？、\n\r\s,\.!\?]+/g, ' ')
+    .replace(/[，。！？、\n\r\s,.!?]+/g, ' ')
     .split(' ')
     .filter((w) => w.length >= 2 && w.length <= 6)
 
@@ -44,22 +44,22 @@ function pseudoAnalysis(text: string, contentType: ContentType): AnalysisResult 
   const seed = len % 8
   const label = contentTypeLabels[contentType]
   const danmaku = [
-    `最近的${label}透露出一种微妙的情绪波动`,
-    `每天都在和自己的生活斗智斗勇`,
-    `表面平静，内心已经演完一部电影`,
-    `当代年轻人的精神状态：稳定地不稳定着`,
-    `你的文字里有种说不清的孤独感`,
-    `好像一直在等什么，但又不知道在等什么`,
-    `深夜的思考比白天更有深度`,
-    `嘴上说着躺平，身体还在卷`,
-    `偶尔也想做个不用思考的人`,
-    `最近的你，像一杯半糖的拿铁`,
-    `有人关心你飞得高不高，没人问你累不累`,
-    `你的${label}里藏着另一个自己`,
-    `一边崩溃一边自愈，是成年人的日常`,
-    `今天也在努力扮演一个情绪稳定的人`,
-    `深夜的碎碎念是最真实的自己`,
-    `生活就是不断地在希望和失望之间横跳`,
+    `这段${label}里有点没说透的累`,
+    `你在和生活讲道理，生活在装没听见`,
+    `表面还行，心里已经开了好几场会`,
+    `稳定地不稳定着，也算一种当代技能`,
+    `这些字里有一点说不上来的孤单`,
+    `像是在等什么，又怕真的等来什么`,
+    `白天没空想的事，深夜会自己排队`,
+    `嘴上说算了，身体还在硬撑`,
+    `偶尔也想把脑子静音五分钟`,
+    `最近的你，像一杯放凉的半糖拿铁`,
+    `大家问你忙不忙，很少问你累不累`,
+    `这段${label}里藏着一个没出声的你`,
+    `一边撑住，一边慢慢把自己捞回来`,
+    `今天也在努力演一个没事的人`,
+    `深夜的碎念，往往比白天诚实`,
+    `生活在希望和失望之间来回晃，你还在`,
   ]
 
   return {
@@ -68,18 +68,18 @@ function pseudoAnalysis(text: string, contentType: ContentType): AnalysisResult 
     diagnosis: {
       mood: moodMap[seed],
       stressLevel: 3 + (seed % 6),
-      socialEnergy: seed % 3 === 0 ? '社交电量不足，需要独处充电' : seed % 3 === 1 ? '社交能量充沛，适合出门' : '选择性社交，只和舒服的人待在一起',
-      sleepHint: len > 2000 ? '文字量较大，暗示近期思绪较多，可能影响睡眠' : '睡眠质量尚可，但可以有更规律的作息',
-      summary: `根据你的${label}内容分析，你当前处于一种${moodMap[seed]}的状态。你有着丰富的内心世界，偶尔会感到一些压力，但整体在积极应对生活的各种挑战。建议多给自己一些放松的时间，偶尔放下手机，去感受真实的世界。`,
+      socialEnergy: seed % 3 === 0 ? '社交电量偏低，更想一个人安静待会儿' : seed % 3 === 1 ? '还有一点想见人的力气，适合见舒服的人' : '选择性社交中，只想把时间留给不费劲的人',
+      sleepHint: len > 2000 ? '文字有点长，像是脑子夜里还没关灯，睡前可以先少刷一会儿' : '睡意还算能靠岸，只是别把最后一点安静交给手机',
+      summary: `从这段${label}里看，你像是停在一种${moodMap[seed]}的状态里。你不是没有在往前走，只是心里还有些话没来得及放下。今天先别急着整理人生，给自己留一点不用表现的时间。`,
     },
     movieScene: {
       genre: genreMap[seed],
       sceneDescription: len > 2000
-        ? `深夜的房间里，只有屏幕的微光。窗外城市的喧嚣已渐渐平息，而你的思绪还在高速运转。镜头缓缓推近，你的表情在光影中忽明忽暗，像是在寻找什么，又像是在等待什么。背景里是堆积的书籍和半空的咖啡杯，墙上贴着未完成的计划表。`
-        : `黄昏的街角，你站在十字路口，周围的行人来去匆匆。微风拂过，带着这座城市特有的气息。你掏出手机看了一眼，又放回口袋，继续向前走去。画面定格在你的背影，逆光中带着一丝坚定。`,
+        ? `深夜的房间里，只剩屏幕还亮着。窗外的车声慢慢少了，你却还在一行字和另一行字之间来回停顿。镜头靠近，杯子里的咖啡已经凉透，桌角压着一张没写完的清单。你把手机扣下，又翻回来，像是想把今天最后一点声音也听完。`
+        : `黄昏的路口，人群从你身边流过去。你站了一会儿，掏出手机看了眼，又把它放回口袋。风吹过来，带着路边小店的热气。镜头停在你的背影上，不算洒脱，但确实还在往前走。`,
       bgm: seed % 3 === 0 ? '坂本龙一 - Merry Christmas Mr. Lawrence' : seed % 3 === 1 ? 'Radwimps - なんでもないや' : '陈奕迅 - 孤勇者',
-      colorPalette: seed % 3 === 0 ? '蓝紫调，带一点胶片颗粒感' : seed % 3 === 1 ? '暖黄调，日系清新风格' : '青橙对比，赛博朋克氛围',
-      tagline: seed % 3 === 0 ? '一个人，也是一支队伍' : seed % 3 === 1 ? '生活不是电影，但你可以是自己的导演' : '所有的不期而遇都在路上',
+      colorPalette: seed % 3 === 0 ? '蓝紫调，带一点旧胶片的颗粒' : seed % 3 === 1 ? '暖黄调，像傍晚便利店门口的灯' : '青橙对比，城市边缘有一点未熄的亮',
+      tagline: seed % 3 === 0 ? '一个人走慢一点，也是在往前' : seed % 3 === 1 ? '生活不是电影，但这一帧确实属于你' : '有些路不是答案，是你还在路上',
     },
   }
 }
@@ -104,10 +104,10 @@ export const localProvider: AIProvider = {
         const s = sentiment[0] as { label: string; score: number }
         if (s.label === 'NEGATIVE' && s.score > 0.6) {
           result.diagnosis.mood = '低落'
-          result.diagnosis.summary = '检测到文本中存在一定的负面情绪，最近似乎有些事情让你感到困扰。不过没关系，情绪起伏本就是人生的常态。'
+          result.diagnosis.summary = '这段文字里有一点往下沉的情绪。也许最近有些事让你不太好受，先别急着把它解释清楚，能承认它在这里就已经不容易。'
         } else if (s.label === 'POSITIVE' && s.score > 0.6) {
           result.diagnosis.mood = '积极'
-          result.diagnosis.summary = '文本中充满了积极的能量！看来你最近状态不错，继续保持这种势头。'
+          result.diagnosis.summary = '这段文字里有很亮的一面。你最近像是终于攒回了一点力气，可以把它留住，不用立刻花光。'
         }
       }
       return result

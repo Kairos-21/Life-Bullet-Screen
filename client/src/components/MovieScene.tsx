@@ -14,7 +14,7 @@ export default function MovieScene() {
     try {
       const dataUrl = await toPng(cardRef.current, { backgroundColor: '#0a0a0f' })
       const link = document.createElement('a')
-      link.download = '如果今天是一幕电影.png'
+      link.download = '今天这一帧.png'
       link.href = dataUrl
       link.click()
     } catch {
@@ -27,13 +27,13 @@ export default function MovieScene() {
       <div className="flex items-center justify-between border-b border-white/6 bg-white/[0.03] px-5 py-4">
         <h3 className="text-sm font-semibold text-danmaku-text">
           <span className="mr-2 text-danmaku-gold">▣</span>
-          如果你是电影角色
+          最后，把今天拍成一帧
         </h3>
         <button
           onClick={handleExport}
           className="cursor-pointer px-1 py-1 text-xs text-danmaku-muted/76 transition-colors hover:text-white"
         >
-          保存一帧
+          保存这一帧
         </button>
       </div>
 
@@ -50,20 +50,20 @@ export default function MovieScene() {
           <div className="mx-auto max-w-4xl">
             <div className="flex items-center justify-between gap-6 border-b border-white/6 pb-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.34em] text-danmaku-muted/34">Tonight&apos;s Genre</p>
+                <p className="text-[10px] uppercase tracking-[0.34em] text-danmaku-muted/34">片种</p>
                 <p className="mt-2 movie-scene-copy text-sm text-danmaku-gold/86 sm:text-[0.98rem]">
                   {scene.genre}
                 </p>
               </div>
               <div className="hidden text-right text-[10px] uppercase tracking-[0.28em] text-danmaku-muted/24 sm:block">
-                <p>One Scene</p>
-                <p className="mt-2">From Your Words</p>
+                <p>不是结论</p>
+                <p className="mt-2">只是余味</p>
               </div>
             </div>
 
             <div className="mt-9 grid gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-14">
               <div className="lg:pr-5">
-                <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Scene Description</p>
+                <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">镜头停在</p>
                 <p className="mt-5 max-w-[30rem] movie-scene-copy text-[1.02rem] leading-[2.15] text-danmaku-text-dim/88 sm:text-[1.1rem] sm:leading-[2.2]">
                   {scene.sceneDescription}
                 </p>
@@ -71,14 +71,14 @@ export default function MovieScene() {
 
               <div className="space-y-5 lg:pt-1">
                 <div className="rounded-[24px] border border-white/8 bg-white/[0.035] p-5 sm:p-6">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-danmaku-muted/46">Recommended BGM</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-danmaku-muted/46">片尾会响起</p>
                   <p className="mt-3 text-sm leading-7 text-white sm:text-base">
                     {scene.bgm}
                   </p>
                 </div>
 
                 <div className="rounded-[24px] border border-white/8 bg-white/[0.035] p-5 sm:p-6">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-danmaku-muted/46">Color Palette</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-danmaku-muted/46">画面颜色</p>
                   <p className="mt-3 text-sm leading-7 text-danmaku-text-dim/84 sm:text-base">
                     {scene.colorPalette}
                   </p>
@@ -87,7 +87,6 @@ export default function MovieScene() {
             </div>
 
             <div className="mt-12 border-t border-white/8 pt-9 text-center">
-              <p className="text-[11px] uppercase tracking-[0.3em] text-danmaku-muted/40">Tagline</p>
               <p className="mx-auto mt-4 max-w-3xl movie-scene-tagline text-[clamp(1.5rem,3.2vw,2.6rem)] leading-[1.35] text-danmaku-gold">
                 “{scene.tagline}”
               </p>
@@ -97,9 +96,6 @@ export default function MovieScene() {
 
         <div className="h-5 bg-black/70" />
 
-        <div className="border-t border-white/6 px-6 py-3 text-center text-[11px] tracking-[0.26em] text-danmaku-muted/28 sm:px-8">
-          DIRECTOR: LIFE · CINEMATOGRAPHER: AI · FILTER: YOUR WORDS
-        </div>
       </div>
     </section>
   )

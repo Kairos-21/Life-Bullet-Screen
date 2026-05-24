@@ -11,11 +11,11 @@ async function callDemoProxy(text: string, contentType: string): Promise<Analysi
   })
 
   if (res.status === 429) {
-    throw new Error('演示模式使用频率过高，请稍后再试或使用其他模式')
+    throw new Error('演示模式刚刚被用得有点频繁，稍后再试，或先换成本地显影')
   }
   if (!res.ok) {
     const err = await res.text()
-    throw new Error(`演示模式暂时不可用: ${res.status} ${err}`)
+    throw new Error(`演示模式这次没接上：${res.status} ${err}`)
   }
 
   return res.json()

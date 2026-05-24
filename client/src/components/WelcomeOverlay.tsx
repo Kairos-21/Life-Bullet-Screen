@@ -1,27 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 
 const questions = [
-  '今天，脑子里有没有一句没法发出去的话？',
-  '深夜里最先浮起来的那个念头，还在吗？',
-  '如果今天只能留下一句弹幕，你想写什么？',
-  '有没有一句话，你假装已经忘了？',
+  '今天，有没有一句话一直没找到出口？',
+  '深夜里先冒出来的那个念头，还在吗？',
+  '如果今天只能留下一条弹幕，你想写什么？',
+  '有没有一句话，你其实还没放下？',
 ]
 
 const subtitles = [
   '那些没发出去的话，也算说过。',
-  '有些情绪不用整理，也值得被接住。',
-  '不是每一种念头，都要解释给别人听。',
+  '有些情绪不用整理，也可以先放下。',
+  '不是每个念头，都要解释给别人听。',
 ]
 
 export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
   const [visible, setVisible] = useState(true)
   const [question] = useState(() => questions[Math.floor(Math.random() * questions.length)])
   const [subtitle] = useState(() => subtitles[Math.floor(Math.random() * subtitles.length)])
-
-  useEffect(() => {
-    setVisible(true)
-  }, [])
 
   const handleEnter = () => {
     setVisible(false)
@@ -126,7 +122,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              今晚先留下一句
+              先留下一句
             </motion.button>
 
             <motion.p
@@ -135,7 +131,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 2.3, duration: 0.8 }}
             >
-              你的文字只会停留在你的浏览器里
+              默认只留在你的浏览器里
             </motion.p>
           </div>
         </motion.div>

@@ -8,7 +8,7 @@ export default function DemoBanner() {
 
   return (
     <div className="text-center py-2 bg-danmaku-accent/10 border-b border-danmaku-accent/20 text-xs text-danmaku-accent">
-      🔑 演示模式已激活 — 当前使用开发者 Key 进行分析，数据将发送至云端 AI 处理
+      🔑 演示模式已打开：这次会调用云端 AI，帮你生成一份完整回声
     </div>
   )
 }

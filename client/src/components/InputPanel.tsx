@@ -27,10 +27,10 @@ interface SpeechRecognition extends EventTarget {
 }
 
 const typeOptions: { value: ContentType; label: string; icon: string; hint: string }[] = [
-  { value: 'chat', label: '聊天边角', icon: '💬', hint: '像刚刚没发出去的那一句吐槽' },
-  { value: 'diary', label: '写给自己', icon: '✍️', hint: '像夜里写在备忘录里的句子' },
-  { value: 'voice', label: '深夜碎念', icon: '🎙️', hint: '像走路时突然冒出来的心声' },
-  { value: 'social', label: '朋友圈草稿', icon: '🫧', hint: '像想发又删掉的那一条' },
+  { value: 'chat', label: '聊天余音', icon: '💬', hint: '像那句打完又删掉的话' },
+  { value: 'diary', label: '写给自己', icon: '✍️', hint: '像夜里留在备忘录的句子' },
+  { value: 'voice', label: '深夜碎念', icon: '🎙️', hint: '像走在路上忽然冒出来的心声' },
+  { value: 'social', label: '朋友圈草稿', icon: '🫧', hint: '像想发又舍不得发的那一条' },
 ]
 
 const sampleTexts: Record<ContentType, string> = {
@@ -49,9 +49,9 @@ const sampleTexts: Record<ContentType, string> = {
 }
 
 const helperLines = [
-  '先别整理，想到哪写到哪。',
-  '一句也行，不用把它说得很完整。',
-  '你不需要把情绪包装成正确答案。',
+  '先别整理，想到哪儿就写到哪儿。',
+  '一句也行，不用把它说圆。',
+  '不用把情绪写成标准答案。',
 ]
 
 export default function InputPanel({ secondaryAction }: { secondaryAction?: ReactNode }) {
@@ -64,6 +64,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
 
   const [isRecording, setIsRecording] = useState(false)
   const [sampleOpen, setSampleOpen] = useState(false)
+  const [helperIndex] = useState(() => Math.floor(Math.random() * helperLines.length))
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   const activeType = typeOptions.find((option) => option.value === contentType) ?? typeOptions[0]
@@ -71,10 +72,11 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
   const longEnough = content.trim().length >= 12
 
   const helperLine = useMemo(() => {
-    if (content.trim().length > 45) return '好，就先这样。让这条弹幕自己发光。'
-    if (content.trim().length > 0) return '嗯，这句先放这儿。'
-    return helperLines[Math.floor(Math.random() * helperLines.length)]
-  }, [content])
+    const length = content.trim().length
+    if (length > 45) return '够了，别再替它修饰。就让这段话按原样被看见。'
+    if (length > 0) return '先不用解释，这一句已经可以算数。'
+    return helperLines[helperIndex]
+  }, [content, helperIndex])
 
   const fillSample = () => {
     setContent(sampleTexts[contentType])
@@ -133,12 +135,11 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
     <div className="w-full space-y-5">
       <div className="emotion-input-shell">
         <div className="mb-6 text-center">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/45">A Place To Put It Down</p>
           <h2 className="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl">
-            此刻脑子飘过什么？
+            如果你愿意，可以把那句话先放在这里。
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-danmaku-text-dim/82 sm:text-base">
-            一句吐槽、一点 emo、一段自嘲、一个没法发朋友圈的念头，都可以先丢进来。
+            可以是聊天、日记、语音转文字，也可以是一条最后没发出去的朋友圈。不必特意整理，像当时那样就很好。
           </p>
         </div>
 
@@ -148,7 +149,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
               <span className="inline-flex h-2 w-2 rounded-full bg-danmaku-accent/70" />
               {activeType.label}
             </div>
-            {hasContent ? <div>{`${content.trim().length} 个字正在显影`}</div> : <div className="w-4" />}
+            {hasContent ? <div>{`${content.trim().length} 个字`}</div> : <div className="w-4" />}
           </div>
 
           <textarea
@@ -158,7 +159,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
               setContent(e.target.value)
               if (e.target.value.trim()) setViewStage('composing')
             }}
-            placeholder={'例如：今天又假装很忙。\n\n或者：突然觉得好累，但也不知道该跟谁说。'}
+            placeholder={'例如：今天又假装自己很忙。\n\n或者：突然觉得好累，但也不知道该跟谁说。'}
             rows={hasContent ? 11 : 9}
             className="min-h-[240px] w-full resize-none bg-transparent px-1 py-2 text-base leading-8 text-danmaku-text outline-none placeholder:text-danmaku-muted/42 sm:text-lg"
           />
@@ -169,7 +170,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
                 onClick={fillSample}
                 className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
               >
-                把一段示例填进来
+                填入示例文本
               </button>
             </div>
 
@@ -223,7 +224,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
               </div>
 
               <p className="text-center text-sm text-danmaku-muted/70">
-                它现在更像 <span className="text-danmaku-text">{activeType.hint}</span>
+                内容类型先按 <span className="text-danmaku-text">{activeType.label}</span> 处理，觉得不对可以切换。
               </p>
             </motion.div>
           )}
@@ -237,7 +238,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             className="flex items-center gap-2 px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white cursor-pointer"
           >
             <span className="text-danmaku-gold/70">{sampleOpen ? '−' : '+'}</span>
-            {sampleOpen ? '先把这些轻轻收起来' : '也可以直接看一套示例结果'}
+            {sampleOpen ? '收起示例入口' : '没有素材时，可以先看示例结果'}
           </button>
 
           {secondaryAction ? <div className="text-right text-danmaku-muted/74">{secondaryAction}</div> : null}
@@ -253,20 +254,11 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
               {typeOptions.map((option, index) => {
-                const layoutClass =
-                  index === 0
-                    ? 'sm:translate-y-0'
-                    : index === 1
-                      ? 'sm:translate-y-3'
-                      : index === 2
-                        ? 'sm:translate-y-2'
-                        : 'sm:translate-y-5'
-
                 return (
                   <motion.button
                     key={option.value}
                     onClick={() => handleShowDemo(option.value)}
-                    className={`group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-all hover:-translate-y-1 hover:border-white/16 hover:bg-white/[0.045] sm:p-5 ${layoutClass}`}
+                    className="group flex min-h-[88px] flex-col justify-center rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-all hover:-translate-y-1 hover:border-white/16 hover:bg-white/[0.045] sm:min-h-[96px] sm:p-5"
                     initial={{ opacity: 0, y: 12, rotate: index % 2 === 0 ? -1.2 : 1.2 }}
                     animate={{ opacity: 1, y: 0, rotate: 0 }}
                     transition={{ duration: 0.35, delay: index * 0.05, ease: 'easeOut' }}

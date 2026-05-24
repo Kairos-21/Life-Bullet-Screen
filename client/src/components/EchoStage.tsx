@@ -3,22 +3,22 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
 
 const moodEchoes: Record<string, string[]> = {
-  平和: ['这条弹幕落下来的时候，空气都慢了一点。'],
-  愉悦: ['你今天的念头像是口袋里没说出口的小烟花。'],
-  积极: ['这句里有一股还没完全熄灭的劲。'],
-  疲惫: ['像深夜地铁最后一班车，安静，但已经很累了。'],
-  焦虑: ['像脑子里开了很多个小窗口，但都没真正关掉。'],
-  期待: ['这句话后面，藏着一点想往前走的光。'],
-  迷茫: ['像站在岔路口，先把心情放下来认一认路。'],
-  兴奋: ['这条弹幕有点发亮，像马上要发生什么。'],
-  怀旧: ['这句像从旧抽屉里掉出来的一张电影票。'],
-  低落: ['这句很轻，但落下来的时候其实有重量。'],
+  平和: ['它的第一层回声，会先慢一点出现。'],
+  愉悦: ['它的第一层回声，会先带一点亮。'],
+  积极: ['它的第一层回声，会先保留那股往前走的劲。'],
+  疲惫: ['它的第一层回声，会先承认那点累。'],
+  焦虑: ['它的第一层回声，会先把乱开的窗口排一排。'],
+  期待: ['它的第一层回声，会先把那点期待留住。'],
+  迷茫: ['它的第一层回声，会先陪你认认路。'],
+  兴奋: ['它的第一层回声，会先让那点亮动起来。'],
+  怀旧: ['它的第一层回声，会先从旧片段里经过。'],
+  低落: ['它的第一层回声，会先轻一点落下来。'],
 }
 
 const genericEchoes = [
-  '收到一条刚刚从脑海边缘飘过的念头。',
-  '先别急着解释它，它已经被接住了。',
-  '有些话不用说得完整，也已经算说过。',
+  '这段话已经进来了，先不急着解释。',
+  '接下来先让弹幕经过，再把它收成一张侧影。',
+  '有些话说不完整，也已经可以被看见。',
 ]
 
 const ECHO_ANIMATION_END_MS = 5000
@@ -36,7 +36,6 @@ function getOpening(content: string) {
 export default function EchoStage() {
   const result = useAppStore((s) => s.result)
   const content = useAppStore((s) => s.content)
-  const contentType = useAppStore((s) => s.contentType)
   const setViewStage = useAppStore((s) => s.setViewStage)
   const [countdown, setCountdown] = useState(5)
   const [countdownStarted, setCountdownStarted] = useState(false)
@@ -45,31 +44,27 @@ export default function EchoStage() {
     const mood = result?.diagnosis?.mood ?? ''
     const moodLine = Object.entries(moodEchoes).find(([key]) => mood.includes(key) || key.includes(mood))?.[1]?.[0]
     const opening = getOpening(content)
-    const sourceLabel =
-      contentType === 'chat'
-        ? '聊天边角'
-        : contentType === 'diary'
-          ? '日记空白页'
-          : contentType === 'voice'
-            ? '深夜语音碎片'
-            : '没发出去的朋友圈'
-
     return [
       `“${opening}”`,
       moodLine ?? genericEchoes[1],
-      `它先被轻轻放进了今天的 ${sourceLabel} 里。`,
+      '等一下先别找结论，先看哪些话会从它旁边经过。',
     ]
-  }, [content, contentType, result])
+  }, [content, result])
 
   useEffect(() => {
-    setCountdown(5)
-    setCountdownStarted(false)
+    const resetTimer = window.setTimeout(() => {
+      setCountdown(5)
+      setCountdownStarted(false)
+    }, 0)
 
     const startTimer = window.setTimeout(() => {
       setCountdownStarted(true)
     }, ECHO_ANIMATION_END_MS)
 
-    return () => window.clearTimeout(startTimer)
+    return () => {
+      window.clearTimeout(resetTimer)
+      window.clearTimeout(startTimer)
+    }
   }, [echoes])
 
   useEffect(() => {
@@ -92,15 +87,6 @@ export default function EchoStage() {
   return (
     <section className="mx-auto flex min-h-[68vh] w-full max-w-4xl items-center justify-center px-4">
       <div className="w-full max-w-2xl text-center">
-        <motion.p
-          className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/45"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          Echoing Back
-        </motion.p>
-
         <div className="mt-10 space-y-5">
           {echoes.map((line, index) => (
             <motion.p
@@ -132,7 +118,7 @@ export default function EchoStage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 3.1, duration: 0.8 }}
         >
-          你的弹幕正在慢慢显影，不必着急。
+          正在把原话拆成弹幕、侧影和最后一帧。
         </motion.p>
 
         <motion.div
@@ -145,12 +131,12 @@ export default function EchoStage() {
             onClick={() => setViewStage('revealed')}
             className="cursor-pointer rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
           >
-            想继续的话，就往下看看
+            直接看结果
           </button>
           <span className="text-xs text-danmaku-muted/38">
             {countdownStarted
-              ? `大约 ${countdown}s 后，它也会自己慢慢往下走`
-              : '等这几句慢慢落定，才会开始 5s 倒计时'}
+              ? `${countdown}s 后自动进入结果`
+              : '先让这几句落定'}
           </span>
         </motion.div>
       </div>

@@ -79,7 +79,7 @@ export default function DanmakuView() {
 
   useEffect(() => {
     if (paused || !items.length) return
-    setCurrentAct(1)
+    const timeout0 = setTimeout(() => setCurrentAct(1), 0)
     const timeout1 = setTimeout(() => setCurrentAct(2), 5000)
     const timeout2 = setTimeout(() => setCurrentAct(3), 16000)
     const loop = setInterval(() => {
@@ -88,6 +88,7 @@ export default function DanmakuView() {
       setTimeout(() => setCurrentAct(3), 16000)
     }, 22000)
     return () => {
+      clearTimeout(timeout0)
       clearTimeout(timeout1)
       clearTimeout(timeout2)
       clearInterval(loop)

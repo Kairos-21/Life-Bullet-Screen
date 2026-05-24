@@ -5,9 +5,9 @@ import { useAppStore } from '../store/appStore'
 type WordStyle = 'particles' | 'bubbles' | 'galaxy'
 
 const styleOptions: { value: WordStyle; label: string; icon: string }[] = [
-  { value: 'particles', label: '粒子散落', icon: '✦' },
-  { value: 'bubbles', label: '词语气泡', icon: '◌' },
-  { value: 'galaxy', label: '词语掠影', icon: '☄' },
+  { value: 'particles', label: '摊开', icon: '✦' },
+  { value: 'bubbles', label: '悬浮', icon: '◌' },
+  { value: 'galaxy', label: '经过', icon: '☄' },
 ]
 
 const COLORS = [
@@ -357,27 +357,27 @@ function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: numb
               transform: 'translate(-50%, -50%)',
             }}
             initial={{ opacity: 0, scale: 0.74 }}
-            animate={{
-              opacity: [0, word.opacity * 0.4, word.opacity * 0.88, word.opacity * 0.58, 0],
-              y: [0, -84, -192, -304, -420],
-              x: [0, word.sway * 0.45, word.sway, word.sway * 0.2, -word.sway * 0.28],
-              scale: [0.74, 0.88, 0.99, 1.08, 1.16],
-            }}
-            transition={{
-              opacity: {
+              animate={{
+                opacity: [0, word.opacity * 0.4, word.opacity * 0.88, word.opacity * 0.58, 0],
+                y: [0, -84, -192, -304, -420],
+                x: [0, word.sway * 0.16, word.sway * 0.38, word.sway * 0.7, word.sway],
+                scale: [0.74, 0.88, 0.99, 1.08, 1.16],
+              }}
+              transition={{
+                opacity: {
                 duration: word.duration,
                 delay: word.delay,
                 repeat: Infinity,
                 ease: 'linear',
                 times: [0, 0.16, 0.42, 0.76, 1],
               },
-              x: {
-                duration: word.duration,
-                delay: word.delay,
-                repeat: Infinity,
-                ease: 'linear',
-                times: [0, 0.24, 0.52, 0.78, 1],
-              },
+                x: {
+                  duration: word.duration,
+                  delay: word.delay,
+                  repeat: Infinity,
+                  ease: 'easeOut',
+                  times: [0, 0.24, 0.52, 0.78, 1],
+                },
               y: {
                 duration: word.duration,
                 delay: word.delay,
@@ -408,7 +408,7 @@ const emotionWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望'
 
 export default function WordCloud() {
   const result = useAppStore((s) => s.result)
-  const words = result?.wordCloud || []
+  const words = useMemo(() => result?.wordCloud ?? [], [result?.wordCloud])
   const [style, setStyle] = useState<WordStyle>('particles')
 
   const maxWeight = useMemo(() => {
@@ -435,11 +435,11 @@ export default function WordCloud() {
         <div>
           <h3 className="text-sm font-semibold text-danmaku-text">
             <span className="mr-2 text-danmaku-gold">✦</span>
-            人设词云
+            字里反复回来的东西
           </h3>
           {topWords.length >= 2 && (
             <p className="mt-1 text-xs text-danmaku-muted/58">
-              你最近反复出现的词：<span className="text-danmaku-text-dim">{topWords.join('、')}</span>
+              不急着解释，先看它们反复指向哪里：<span className="text-danmaku-text-dim">{topWords.join('、')}</span>
             </p>
           )}
         </div>
@@ -485,7 +485,7 @@ export default function WordCloud() {
       {missingWord && (
         <div className="border-t border-white/5 px-5 py-3 text-right">
           <span className="text-xs italic text-danmaku-muted/34">
-            你很少提到：{missingWord}
+            这次很少出现的词：{missingWord}
           </span>
         </div>
       )}

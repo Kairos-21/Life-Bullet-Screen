@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { ProviderType, ContentType, AnalysisResult, ApiService } from '../services/ai-providers/types'
 
 export type AnalysisStatus = 'idle' | 'loading' | 'success' | 'error'
-export type ViewStage = 'landing' | 'composing' | 'echo' | 'revealed'
+export type ViewStage = 'landing' | 'composing' | 'echo' | 'revealed' | 'finale'
 
 interface AppState {
   // Input

@@ -6,25 +6,32 @@ const router = Router()
 const DEV_API_KEY = process.env.DANMAKU_API_KEY || ''
 const API_TYPE = process.env.DANMAKU_API_TYPE || 'anthropic'
 
-const SYSTEM_PROMPT = `你是一个富有洞察力、幽默且温暖的人生观察者。请严格按 JSON 格式输出分析结果。
+const SYSTEM_PROMPT = `你是「人生弹幕机」的文案大脑：敏锐、幽默、温柔，但不端着。请严格按 JSON 格式输出。
+
+语气要求：
+- 结果的体验顺序是：弹幕先出现，像外部回声；diagnosis 再出现，像从弹幕里收回来的侧影；wordCloud 是字里反复回来的东西；movieScene 是最后的余味。
+- 像深夜里懂一点用户的朋友，不要像心理测评、客服话术或翻译腔。
+- 可以轻轻调侃，但不要居高临下；可以有诗意，但不要空泛鸡汤。
+- 尽量写具体生活画面、动作、光线和停顿，少写抽象结论。
+- diagnosis 不要急着给建议，只说明这些话背后可能压着什么。
 
 返回格式：
 {
-  "danmaku": ["弹幕短句1", ...],  // 10-15条，每条15字以内，幽默/洞察/调侃
+  "danmaku": ["弹幕短句1", ...],  // 10-15条，每条15字以内，像朋友看懂后的轻声吐槽或共鸣
   "wordCloud": [{"text": "关键词", "weight": 10}, ...],  // 15-25个关键词
   "diagnosis": {
-    "mood": "情绪状态",
+    "mood": "此刻状态",
     "stressLevel": 5,
-    "socialEnergy": "社交状态描述",
-    "sleepHint": "睡眠分析暗示",
-    "summary": "整体总结2-3句"
+    "socialEnergy": "社交能量的生活化描述",
+    "sleepHint": "和睡意/休息有关的轻提示",
+    "summary": "对用户此刻状态的温柔读法，2-3句"
   },
   "movieScene": {
-    "genre": "电影类型",
-    "sceneDescription": "画面描述200字",
-    "bgm": "推荐BGM",
+    "genre": "如果今天是一幕电影，它的类型",
+    "sceneDescription": "当前这一幕的画面描述，200字以内",
+    "bgm": "适合这一幕的BGM",
     "colorPalette": "色调描述",
-    "tagline": "标语"
+    "tagline": "这一幕最后留下的一句话"
   }
 }`
 
@@ -49,7 +56,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
     return
   }
 
-  const prompt = `请分析以下${contentType === 'chat' ? '聊天记录' : contentType === 'diary' ? '日记' : contentType === 'voice' ? '语音转文字' : '朋友圈'}内容，生成一份"人生弹幕"分析报告。
+  const prompt = `请阅读以下${contentType === 'chat' ? '聊天记录' : contentType === 'diary' ? '日记' : contentType === 'voice' ? '语音转文字' : '朋友圈'}内容，生成一份「人生弹幕」回声。
 
 === 内容 ===
 ${text}
@@ -78,7 +85,7 @@ ${text}
       if (!apiRes.ok) {
         const err = await apiRes.text()
         console.error('[Demo] Anthropic API error:', apiRes.status, err)
-        res.status(502).json({ error: 'AI 服务暂时不可用' })
+        res.status(502).json({ error: '云端回声这次没接上，稍后再试' })
         return
       }
 
@@ -105,7 +112,7 @@ ${text}
       if (!apiRes.ok) {
         const err = await apiRes.text()
         console.error('[Demo] OpenAI API error:', apiRes.status, err)
-        res.status(502).json({ error: 'AI 服务暂时不可用' })
+        res.status(502).json({ error: '云端回声这次没接上，稍后再试' })
         return
       }
 
@@ -122,11 +129,11 @@ ${text}
       res.json(parsed)
     } catch {
       console.error('[Demo] JSON parse failed:', jsonStr.slice(0, 200))
-      res.status(502).json({ error: 'AI 返回格式异常，请重试' })
+      res.status(502).json({ error: '这次回声有点乱，请再试一次' })
     }
   } catch (e) {
     console.error('[Demo] Proxy error:', e)
-    res.status(502).json({ error: 'AI 服务连接失败' })
+    res.status(502).json({ error: '云端回声连接失败，稍后再试' })
   }
 })
 

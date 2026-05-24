@@ -61,11 +61,11 @@ export default function ApiKeyInput() {
           onChange={(e) => setRememberKey(e.target.checked)}
           className="accent-danmaku-accent"
         />
-        记住 Key，仅保存在你的浏览器里
+        记住 Key，只保存在你的浏览器里
       </label>
 
       <p className="text-xs leading-6 text-danmaku-muted/62">
-        如果你想听见更完整一点的回声，再来打开它就好。轻量本地模式也已经足够温柔。
+        想听见更完整的回声时再打开它就好。只是轻轻看一眼，本地模式也够用了。
       </p>
     </div>
   )
