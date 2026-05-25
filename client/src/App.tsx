@@ -14,6 +14,7 @@ import WordCloud from './components/WordCloud'
 import DiagnosisReport from './components/DiagnosisReport'
 import MovieScene from './components/MovieScene'
 import { getMoodColors, neutral } from './utils/moodBackground'
+import FinaleOverlay from './components/FinaleOverlay'
 
 const rotatingLines = [
   '有些话不一定要说完整。',
@@ -331,22 +332,21 @@ export default function App() {
                   {farewell && (
                     <section className="pb-8 pt-10 text-center">
                       <div className="mx-auto max-w-2xl rounded-[30px] border border-white/10 bg-white/[0.035] px-6 py-10 backdrop-blur-sm">
-                        <div className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/35">Let It Stay A Little Longer</div>
                         <p className="mx-auto mt-5 max-w-lg text-xl leading-relaxed text-danmaku-text-dim">
                           {farewell}
                         </p>
                         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                           <button
-                            onClick={handleReset}
-                            className="rounded-full border border-white/10 bg-white/[0.05] px-6 py-2.5 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
+                            onClick={() => setViewStage('finale')}
+                            className="rounded-full border border-transparent bg-danmaku-accent px-6 py-2.5 text-sm text-white shadow-[0_14px_34px_rgba(233,69,96,0.24)] transition-colors hover:bg-danmaku-accent/90 cursor-pointer"
                           >
-                            还想留下别的话
+                            离开前，再看它们经过一次
                           </button>
                           <button
-                            onClick={() => setViewStage('revealed')}
-                            className="rounded-full border border-transparent px-4 py-2.5 text-sm text-danmaku-muted transition-colors hover:text-danmaku-text cursor-pointer"
+                            onClick={handleReset}
+                            className="rounded-full border border-white/10 bg-white/[0.05] px-5 py-2.5 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.09] hover:text-white cursor-pointer"
                           >
-                            先让这些字安静待一会儿
+                            再留一句
                           </button>
                         </div>
                       </div>
@@ -354,11 +354,23 @@ export default function App() {
                   )}
                 </motion.section>
               )}
+
+              {viewStage === 'finale' && hasResult && (
+                <motion.section
+                  key="finale"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                >
+                  <FinaleOverlay fallbackFarewell={farewell} />
+                </motion.section>
+              )}
             </AnimatePresence>
           </main>
 
           <footer className="border-t border-white/5 py-5 text-center text-xs text-danmaku-muted/25">
-            人生弹幕机 · 那些没发出去的话，也算说过
+            人生弹幕机 · 没发出去的话，也在这里亮过
           </footer>
         </>
       )}
