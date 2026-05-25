@@ -1,23 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 
 const questions = [
-  '今天，脑海里有没有一句没法发出去的话？',
-  '深夜里最先浮起来的那个念头，还在吗？',
-  '如果今天只能留下一句弹幕，你想写什么？',
-  '有没有一句话，你假装已经忘了？',
+  '把散落的情绪，重新拼成今天的你',
+  '这里收留一些没被认真听见的瞬间',
+  '深夜冒出来的念头，往往比白天诚实一点',
+  '有没有一句话，在输入框里停留了很久',
 ]
 
 const subtitles = [
-  '那些没发出去的话，也算说过。',
-  '有些情绪不用整理，也可以先放下。',
-  '不是每个念头，都要解释给别人听。',
+  '不是每一种念头，都要发送给全世界。',
+  '每一种心情，都值得拥有属于自己的弹幕。',
+  '那些一闪而过的念头，也值得被看见。',
 ]
 
 export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
   const [visible, setVisible] = useState(true)
   const [question] = useState(() => questions[Math.floor(Math.random() * questions.length)])
   const [subtitle] = useState(() => subtitles[Math.floor(Math.random() * subtitles.length)])
+
+  useEffect(() => {
+    setVisible(true)
+  }, [])
 
   const handleEnter = () => {
     setVisible(false)
@@ -101,7 +105,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
         </motion.p>
 
         <motion.div
-          className="welcome-entry mx-auto mt-14 w-full max-w-md"
+          className="welcome-entry mx-auto mt-14"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.9, duration: 0.85, ease: 'easeOut' }}
@@ -113,38 +117,27 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
             transition={{ delay: 2, duration: 0.8 }}
           />
 
-          <div className="relative mx-auto mt-7 flex w-full justify-center">
+          <div className="relative mx-auto mt-6 flex max-w-sm flex-col items-center">
+            <div className="pointer-events-none absolute inset-x-10 top-0 h-16 rounded-full bg-[radial-gradient(circle,rgba(233,69,96,0.2)_0%,rgba(233,69,96,0.06)_42%,rgba(233,69,96,0)_76%)] blur-2xl" />
+
             <motion.button
               onClick={handleEnter}
-              className="group relative h-20 w-[260px] border-0 bg-transparent text-lg font-semibold text-white/94 focus:outline-none"
-              whileHover={{ y: -1 }}
-              whileTap={{ scale: 0.985 }}
+              className="relative cursor-pointer rounded-full border border-white/10 bg-[linear-gradient(135deg,rgba(72,54,98,0.72),rgba(56,46,84,0.56))] px-11 py-3 text-sm font-medium text-white shadow-[0_14px_36px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:border-danmaku-accent/26 hover:bg-[linear-gradient(135deg,rgba(86,60,116,0.82),rgba(68,52,98,0.68))]"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-danmaku-gold/18 blur-2xl transition-opacity duration-300 group-hover:opacity-90" />
-              <span className="pointer-events-none absolute left-1/2 top-1/2 h-20 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-danmaku-accent/12 blur-2xl transition-opacity duration-300 group-hover:opacity-90" />
-              <span className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-36 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/8 blur-xl transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="pointer-events-none absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-white/14 to-transparent" />
-
-              <span className="absolute inset-0 z-10 flex items-center justify-center gap-3 text-center">
-                <span>把这句留下</span>
-                <motion.span
-                  className="text-white/66 transition-colors group-hover:text-white"
-                  initial={false}
-                  whileHover={{ x: 3 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
-                >
-                  →
-                </motion.span>
-              </span>
+              留下今天的这一条吧
             </motion.button>
-          </div>
 
-          <motion.div
-            className="mx-auto mt-7 h-px w-32 bg-gradient-to-r from-transparent via-white/18 to-transparent"
-            initial={{ opacity: 0, scaleX: 0.65 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ delay: 2.15, duration: 0.8 }}
-          />
+            <motion.p
+              className="mt-5 text-[12px] tracking-[0.05em] text-danmaku-muted/42"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.3, duration: 0.8 }}
+            >
+              你的文字只会停留在你的浏览器里
+            </motion.p>
+          </div>
         </motion.div>
       </motion.div>
     </motion.div>

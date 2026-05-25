@@ -4,9 +4,9 @@ import { userApiProvider } from '../services/ai-providers/user-api'
 import { demoProvider } from '../services/ai-providers/demo'
 
 const statusLabels: Record<AnalysisStatus, string> = {
-  idle: '让它慢慢显影',
-  loading: '正在把字句点亮…',
-  success: '再留一句也可以',
+  idle: '让思绪慢慢显影',
+  loading: '弹幕正在落地…',
+  success: '如果还想，可以再留一句',
   error: '重新试试',
 }
 
@@ -34,7 +34,7 @@ export default function AnalyzeButton() {
           break
         case 'user-api':
           if (!apiKey) {
-            setError('先填一下 API Key，才能听见更完整的回声')
+            setError('请先填写 API Key')
             setProvider('local')
             return
           }
@@ -48,7 +48,7 @@ export default function AnalyzeButton() {
       }
       setResult(result)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '这次没能顺利显影，稍后再试试'
+      const msg = e instanceof Error ? e.message : '这次没有顺利接住，稍后再试试'
       setError(msg)
     }
   }
