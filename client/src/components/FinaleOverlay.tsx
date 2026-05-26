@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAppStore } from '../store/appStore'
-import { getFinaleWhisper, isSoftFinaleMood, pickFinaleDanmaku, pickFinaleWords } from '../utils/finale'
+import { getFinaleWhisper, pickFinaleDanmaku, pickFinaleWords } from '../utils/finale'
 import { buildDanmakuStageItems } from '../utils/danmakuStage'
 
-type FinalePhase = 'prelude' | 'danmaku' | 'words' | 'wash' | 'whisper'
+type FinalePhase = 'prelude' | 'danmaku' | 'words' | 'whisper'
 
 interface FinaleOverlayProps {
   fallbackFarewell: string | null
@@ -19,7 +19,6 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
   const [debugPaused, setDebugPaused] = useState(false)
 
   const mood = result?.diagnosis?.mood ?? null
-  const softMode = isSoftFinaleMood(mood)
   const danmakuTexts = useMemo(() => pickFinaleDanmaku(result?.danmaku ?? [], mood), [mood, result?.danmaku])
   const danmakuItems = useMemo(() => buildDanmakuStageItems(danmakuTexts, mood), [danmakuTexts, mood])
   const words = useMemo(() => pickFinaleWords(result?.wordCloud ?? []), [result?.wordCloud])
@@ -37,21 +36,17 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
     const preludeDuration = 800
     const danmakuDuration = 12000
     const wordsDuration = 5000
-    const washDuration = (softMode ? 2200 : 1800) + 1500
-
     const danmakuStart = window.setTimeout(() => setPhase('danmaku'), preludeDuration)
     const wordsStart = window.setTimeout(() => setPhase('words'), preludeDuration + danmakuDuration)
-    const washStart = window.setTimeout(() => setPhase('wash'), preludeDuration + danmakuDuration + wordsDuration)
-    const whisperStart = window.setTimeout(() => setPhase('whisper'), preludeDuration + danmakuDuration + wordsDuration + washDuration)
+    const whisperStart = window.setTimeout(() => setPhase('whisper'), preludeDuration + danmakuDuration + wordsDuration)
 
     return () => {
       document.body.style.overflow = ''
       window.clearTimeout(danmakuStart)
       window.clearTimeout(wordsStart)
-      window.clearTimeout(washStart)
       window.clearTimeout(whisperStart)
     }
-  }, [debugPaused, replaySeed, softMode])
+  }, [debugPaused, replaySeed])
 
   const handleReplay = () => {
     setPhase('prelude')
@@ -80,9 +75,7 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                 ? 0.4
                 : phase === 'words'
                   ? 0.46
-                  : phase === 'wash'
-                    ? 0.56
-                    : 0.26,
+                  : 0.26,
         }}
         transition={{ duration: 1.4, ease: 'easeInOut' }}
       />
@@ -156,17 +149,10 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                       x: [0, index % 2 === 0 ? 5 : -5, index % 2 === 0 ? 14 : -14, index % 2 === 0 ? 24 : -24, index % 2 === 0 ? 34 : -34],
                       scale: [0.84, 0.92, 0.98, 1.02, 1.06],
                     }
-                  : phase === 'wash'
-                    ? {
-                        opacity: [0.18, 0.12, 0],
-                        y: [-38, -62, -90],
-                        x: [index % 2 === 0 ? 30 : -30, index % 2 === 0 ? 42 : -42, index % 2 === 0 ? 58 : -58],
-                        scale: [1.02, 1.06, 1.1],
-                      }
-                    : { opacity: 0, y: 60, x: 0, scale: 0.82 }
+                  : { opacity: 0, y: 60, x: 0, scale: 0.82 }
               }
               transition={{
-                duration: phase === 'words' ? 5.8 : phase === 'wash' ? 2.4 : 0.8,
+                duration: phase === 'words' ? 5.8 : 0.8,
                 delay: phase === 'words' ? index * 0.12 : 0,
                 ease: 'easeOut',
               }}
@@ -187,9 +173,7 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                 ? 0
                 : phase === 'words'
                   ? 0.08
-                  : phase === 'wash'
-                    ? 0.82
-                    : 0.92,
+                  : 0.92,
         }}
         transition={{ duration: phase === 'whisper' ? 2.2 : phase === 'words' ? 2.4 : 1.8, ease: 'easeInOut' }}
         style={{
