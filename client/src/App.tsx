@@ -119,7 +119,6 @@ export default function App() {
   const setViewStage = useAppStore((s) => s.setViewStage)
   const content = useAppStore((s) => s.content)
   const reset = useAppStore((s) => s.reset)
-  const isSampleMode = useAppStore((s) => s.isSampleMode)
   const [welcomeDone, setWelcomeDone] = useState(false)
   const [showControls, setShowControls] = useState(false)
   const [lineIndex, setLineIndex] = useState(0)
@@ -201,16 +200,7 @@ export default function App() {
                   </div>
 
                   <div className="mx-auto mt-8 max-w-4xl">
-                    <InputPanel
-                      secondaryAction={!shouldRevealControls ? (
-                        <button
-                          onClick={() => setShowControls(true)}
-                          className="cursor-pointer px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white"
-                        >
-                          等这句慢慢落稳，再决定怎么显影
-                        </button>
-                      ) : undefined}
-                    />
+                    <InputPanel />
                   </div>
 
                   <AnimatePresence>
@@ -301,19 +291,6 @@ export default function App() {
 
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                      {isSampleMode && (
-                        <span className="rounded-full border border-danmaku-gold/30 bg-danmaku-gold/15 px-3 py-1 text-xs text-danmaku-gold">
-                          当前是示例显影
-                        </span>
-                      )}
-                      <button
-                        onClick={handleReset}
-                        className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white cursor-pointer"
-                      >
-                        如果还想，也可以再留一句
-                      </button>
-                    </div>
                   </div>
 
                   {error && (

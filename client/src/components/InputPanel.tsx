@@ -231,7 +231,12 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
       </div>
 
       <div className="mx-auto max-w-4xl px-1">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/6 pt-3">
+        <div className="relative border-t border-white/6 pt-4">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-0 h-24 w-56 -translate-x-1/2 -translate-y-1/3 rounded-full bg-[radial-gradient(circle,rgba(246,206,116,0.22)_0%,rgba(246,206,116,0.1)_30%,rgba(246,206,116,0.04)_55%,transparent_78%)] blur-2xl"
+          />
+          <div className="relative flex justify-center">
           <button
             onClick={() => setSampleOpen((value) => !value)}
             className="flex items-center gap-2 px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white cursor-pointer"
@@ -240,7 +245,9 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             {sampleOpen ? '先把这些轻轻收起来' : '也可以直接看一套示例结果'}
           </button>
 
-          {secondaryAction ? <div className="text-right text-danmaku-muted/74">{secondaryAction}</div> : null}
+          </div>
+
+          {secondaryAction ? <div className="mt-3 text-center text-danmaku-muted/74">{secondaryAction}</div> : null}
         </div>
 
         <AnimatePresence>
@@ -253,20 +260,11 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
               transition={{ duration: 0.3, ease: 'easeOut' }}
             >
               {typeOptions.map((option, index) => {
-                const layoutClass =
-                  index === 0
-                    ? 'sm:translate-y-0'
-                    : index === 1
-                      ? 'sm:translate-y-3'
-                      : index === 2
-                        ? 'sm:translate-y-2'
-                        : 'sm:translate-y-5'
-
                 return (
                   <motion.button
                     key={option.value}
                     onClick={() => handleShowDemo(option.value)}
-                    className={`group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-all hover:-translate-y-1 hover:border-white/16 hover:bg-white/[0.045] sm:p-5 ${layoutClass}`}
+                    className="group rounded-[28px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.018))] p-4 text-left shadow-[0_18px_40px_rgba(0,0,0,0.16)] transition-all hover:-translate-y-1 hover:border-white/16 hover:bg-white/[0.045] sm:p-5"
                     initial={{ opacity: 0, y: 12, rotate: index % 2 === 0 ? -1.2 : 1.2 }}
                     animate={{ opacity: 1, y: 0, rotate: 0 }}
                     transition={{ duration: 0.35, delay: index * 0.05, ease: 'easeOut' }}
