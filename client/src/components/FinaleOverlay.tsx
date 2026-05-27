@@ -206,7 +206,7 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                       >
                         喧闹散去以后，是他们慢慢显现。
                       </motion.p>
-                    ) : phase === 'whisper' ? null : (
+                    ) : (
                       <motion.p
                         key={`phase-line-${replaySeed}-${phase}`}
                         className="whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
