@@ -5,9 +5,9 @@ import { useAppStore } from '../store/appStore'
 type WordStyle = 'particles' | 'bubbles' | 'galaxy'
 
 const styleOptions: { value: WordStyle; label: string; icon: string }[] = [
-  { value: 'particles', label: '摊开', icon: '✦' },
-  { value: 'bubbles', label: '悬浮', icon: '◌' },
-  { value: 'galaxy', label: '经过', icon: '☄' },
+  { value: 'particles', label: '拾起', icon: '✦' },
+  { value: 'bubbles', label: '泡影', icon: '◌' },
+  { value: 'galaxy', label: '漂浮', icon: '☄' },
 ]
 
 const COLORS = [
@@ -435,11 +435,11 @@ export default function WordCloud() {
         <div>
           <h3 className="text-sm font-semibold text-danmaku-text">
             <span className="mr-2 text-danmaku-gold">✦</span>
-            字里反复回来的东西
+            字里行间的反复
           </h3>
           {topWords.length >= 2 && (
             <p className="mt-1 text-xs text-danmaku-muted/58">
-              不急着解释，先看它们反复指向哪里：<span className="text-danmaku-text-dim">{topWords.join('、')}</span>
+              那些反复出现的，可能正指向某个地方。<span className="text-danmaku-text-dim">{topWords.join('、')}</span>
             </p>
           )}
         </div>

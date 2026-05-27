@@ -281,12 +281,12 @@ export default function App() {
                 >
                   <div className="mx-auto mb-8 flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-3xl">
-                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
+                    <p className="text-center text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
                     <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
-                      你刚刚留下的那些字，已经慢慢长成了今天的样子。
+                      <AutoFitLine text="那些散落的念头，正在慢慢拼出此刻的你" />
                     </h2>
-                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
-                      这里会先映出一个最像此刻的侧影，后面那些弹幕、词和电影感，只是慢慢跟上来。
+                    <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
+                      先让此刻显影，剩下的故事，会慢慢浮现
                     </p>
 
                     </div>
@@ -300,8 +300,8 @@ export default function App() {
                   )}
 
                   <div className="space-y-8">
-                    <DiagnosisReport />
                     <DanmakuStage />
+                    <DiagnosisReport />
                     <WordCloud />
                     <MovieScene />
                   </div>
@@ -317,7 +317,7 @@ export default function App() {
                             onClick={() => setViewStage('finale')}
                             className="rounded-full border border-transparent bg-danmaku-accent px-6 py-2.5 text-sm text-white shadow-[0_14px_34px_rgba(233,69,96,0.24)] transition-colors hover:bg-danmaku-accent/90 cursor-pointer"
                           >
-                            离开前，再看它们经过一次
+                            离开前，再看它们一次
                           </button>
                           <button
                             onClick={handleReset}

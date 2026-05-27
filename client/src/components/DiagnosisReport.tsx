@@ -29,7 +29,7 @@ const moodTitles: Record<string, string> = {
 }
 
 const closingLines = [
-  '这不是结论，只是从刚才那些弹幕里收回来的一点侧光。',
+  '这并非结论，只是从刚才碎散的弹幕里，拾起的一点微光。',
   '不用把它当成标签。它只是帮你看见此刻哪里比较重。',
   '如果有一句说中了，就先把那一句留下来。',
 ]
@@ -76,7 +76,7 @@ export default function DiagnosisReport() {
     <section className="rounded-[32px] border border-white/10 bg-white/[0.035] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.24)] backdrop-blur-sm sm:p-7">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-xl">
-          <h3 className="mt-2 text-2xl font-semibold text-white sm:text-[2rem]">弹幕后留下的侧影</h3>
+          <h3 className="mt-2 text-2xl font-semibold text-white sm:text-[2rem]">弹幕落下后的你</h3>
         </div>
         <button
           onClick={handleExport}
@@ -106,7 +106,7 @@ export default function DiagnosisReport() {
             <p className="text-xs uppercase tracking-[0.22em] text-danmaku-muted/48">此刻读数</p>
             <div className="mt-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-danmaku-muted">压住你的地方</span>
+                <span className="text-danmaku-muted">心里的重量</span>
                 <span className="text-white">{diagnosis.stressLevel}/10</span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/8">
@@ -131,7 +131,7 @@ export default function DiagnosisReport() {
         </div>
 
         <div className="mt-8 rounded-[24px] border border-white/8 bg-white/[0.035] px-5 py-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-danmaku-muted/46">怎么读它</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-danmaku-muted/46">如何解读</p>
           <p className="mt-3 text-sm leading-7 text-danmaku-text-dim/82">
             {closing}
           </p>

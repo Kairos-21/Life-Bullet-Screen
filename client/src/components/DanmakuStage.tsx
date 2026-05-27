@@ -70,30 +70,38 @@ export default function DanmakuStage() {
                 </span>
               </div>
             </div>
-            <p className="max-w-lg text-sm leading-7 text-danmaku-text-dim/72">
-              先不用解释它们。让这些弹幕从眼前经过，看看哪一句像是替你说出了半句。
+            <p className="max-w-lg self-center pt-1 text-sm leading-7 text-danmaku-text-dim/72">
+              不必解释，让它们慢慢经过。也许，它会替你说出那半两心声。
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-2 py-2 text-xs text-danmaku-muted/75 backdrop-blur-sm">
+          <div className="flex items-center gap-1 rounded-full border border-white/10 bg-black/26 px-1.5 py-1.5 text-sm text-danmaku-muted/80 shadow-[0_10px_28px_rgba(0,0,0,0.26)] backdrop-blur-sm">
             <button
               onClick={() => setSpeed((current) => Math.max(0.75, current - 0.25))}
-              className="cursor-pointer rounded-full px-2.5 py-1 transition-colors hover:bg-white/[0.08] hover:text-white"
+              aria-label="减速"
+              title="减速"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-base leading-none text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
             >
-              慢一点
+              -
             </button>
-            <span className="min-w-10 text-center text-danmaku-text-dim">{speed.toFixed(2).replace('.00', '')}x</span>
+            <span className="min-w-11 text-center text-sm font-medium tracking-[0.02em] text-white">
+              {speed.toFixed(2).replace('.00', '')}x
+            </span>
             <button
               onClick={() => setSpeed((current) => Math.min(1.75, current + 0.25))}
-              className="cursor-pointer rounded-full px-2.5 py-1 transition-colors hover:bg-white/[0.08] hover:text-white"
+              aria-label="加速"
+              title="加速"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-base leading-none text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
             >
-              快一点
+              +
             </button>
             <button
               onClick={() => setPaused((current) => !current)}
-              className="cursor-pointer rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 transition-colors hover:bg-white/[0.1] hover:text-white"
+              aria-label={paused ? '继续播放' : '暂停播放'}
+              title={paused ? '继续播放' : '暂停播放'}
+              className="ml-1 flex h-8 min-w-8 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-2.5 text-sm text-white transition-colors hover:bg-white/[0.1]"
             >
-              {paused ? '继续' : '停一下'}
+              {paused ? '▶' : '⏸'}
             </button>
           </div>
         </div>

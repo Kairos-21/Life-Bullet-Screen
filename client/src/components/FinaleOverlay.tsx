@@ -193,15 +193,27 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.95, ease: 'easeInOut' }}
               >
-                <p className="mx-auto mt-8 max-w-[min(92vw,56rem)] text-[clamp(1.6rem,4vw,3rem)] leading-[1.45] text-white/96 sm:whitespace-nowrap">
+                <motion.p
+                  className="mx-auto mt-8 max-w-[min(94vw,60rem)] whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
+                  animate={
+                    phase === 'danmaku'
+                      ? { opacity: [0, 1, 0.42] }
+                      : { opacity: 1 }
+                  }
+                  transition={
+                    phase === 'danmaku'
+                      ? { duration: 4.8, ease: 'easeOut', times: [0, 0.22, 1] }
+                      : { duration: 0.8, ease: 'easeOut' }
+                  }
+                >
                   {phase === 'prelude'
                     ? '先安静一下。'
                     : phase === 'danmaku'
-                      ? '刚才那些弹幕，会最后经过一次。'
+                      ? '让弹幕最后一次经过，此刻，轻轻放下今天的你。'
                       : phase === 'words'
                         ? '然后，只留下反复出现过的几个词。'
                         : '让它们慢慢淡下去。'}
-                </p>
+                </motion.p>
               </motion.div>
             )}
 

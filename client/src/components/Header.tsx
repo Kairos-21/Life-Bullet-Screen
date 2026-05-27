@@ -19,7 +19,7 @@ export default function Header() {
         <span>机</span>
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-danmaku-text-dim/72 sm:text-base">
-        把一段真实的话放进来。先变成弹幕，再收成侧影、词和一帧电影。
+        放入被忽略的灵感。让它变成弹幕，再收成侧影、人设和一帧电影。
       </p>
       {demoEnabled && (
         <p className="mt-3 text-xs text-danmaku-accent/82">

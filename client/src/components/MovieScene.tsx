@@ -95,8 +95,6 @@ export default function MovieScene() {
           </div>
         </div>
 
-        <div className="h-5 bg-black/70" />
-
         <div className="border-t border-white/6 px-6 py-3 text-center text-[11px] tracking-[0.26em] text-danmaku-muted/28 sm:px-8">
           DIRECTOR: LIFE · CINEMATOGRAPHER: AI · FILTER: YOUR WORDS
         </div>
