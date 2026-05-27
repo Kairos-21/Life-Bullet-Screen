@@ -49,7 +49,7 @@ const sampleTexts: Record<ContentType, string> = {
 }
 
 const helperLines = [
-  '先别整理，想到哪写到哪。',
+  '不用过多整理，想到哪，写到哪',
   '一句也行，不用把它说得很完整。',
   '你不需要把情绪包装成正确答案。',
 ]
@@ -64,6 +64,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
 
   const [isRecording, setIsRecording] = useState(false)
   const [sampleOpen, setSampleOpen] = useState(false)
+  const [sampleDraftMode, setSampleDraftMode] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   const activeType = typeOptions.find((option) => option.value === contentType) ?? typeOptions[0]
@@ -77,6 +78,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
   }, [content])
 
   const fillSample = () => {
+    setSampleDraftMode(true)
     setContent(sampleTexts[contentType])
     setViewStage('composing')
   }
@@ -100,6 +102,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
         if (result.isFinal) final += result[0].transcript
       }
       if (final) {
+        setSampleDraftMode(false)
         setContent(content + (content ? '\n' : '') + final)
         setViewStage('composing')
       }
@@ -155,6 +158,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             value={content}
             onFocus={() => setViewStage('composing')}
             onChange={(e) => {
+              setSampleDraftMode(false)
               setContent(e.target.value)
               if (e.target.value.trim()) setViewStage('composing')
             }}
@@ -167,9 +171,10 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             <div className="flex items-center gap-3 text-xs text-danmaku-muted">
               <button
                 onClick={fillSample}
-                className="cursor-pointer rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 transition-colors hover:bg-white/[0.08] hover:text-danmaku-text"
+                className="group cursor-pointer rounded-full border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.03))] px-3.5 py-1.5 text-danmaku-text-dim/88 transition-all hover:border-white/14 hover:bg-white/[0.07] hover:text-white"
               >
-                借一句话，开始今天
+                <span className="mr-1.5 text-danmaku-gold/76 transition-transform group-hover:translate-x-0.5">◦</span>
+                给我一个开头
               </button>
             </div>
 
@@ -209,7 +214,13 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
                 {typeOptions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setContentType(option.value)}
+                    onClick={() => {
+                      setContentType(option.value)
+                      if (sampleDraftMode) {
+                        setContent(sampleTexts[option.value])
+                        setViewStage('composing')
+                      }
+                    }}
                     className={`rounded-full px-4 py-2 text-sm transition-all cursor-pointer ${
                       contentType === option.value
                         ? 'bg-danmaku-accent text-white shadow-[0_10px_24px_rgba(233,69,96,0.22)]'
@@ -242,7 +253,7 @@ export default function InputPanel({ secondaryAction }: { secondaryAction?: Reac
             className="flex items-center gap-2 px-1 py-1 text-sm text-danmaku-muted/78 transition-colors hover:text-white cursor-pointer"
           >
             <span className="text-danmaku-gold/70">{sampleOpen ? '−' : '+'}</span>
-            {sampleOpen ? '先把这些轻轻收起来' : '也可以直接看一套示例结果'}
+            {sampleOpen ? '轻轻收起' : '也可以直接看一套示例结果'}
           </button>
 
           </div>

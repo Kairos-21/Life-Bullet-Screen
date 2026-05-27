@@ -76,6 +76,12 @@ body.mood-bg-active::after {
   text-wrap: balance;
 }
 
+.welcome-entry-button {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
 .movie-scene-copy,
 .movie-scene-tagline {
   font-family: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', serif;

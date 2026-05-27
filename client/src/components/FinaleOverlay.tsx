@@ -35,7 +35,7 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
 
     const preludeDuration = 800
     const danmakuDuration = 12000
-    const wordsDuration = 5000
+    const wordsDuration = 10000
     const danmakuStart = window.setTimeout(() => setPhase('danmaku'), preludeDuration)
     const wordsStart = window.setTimeout(() => setPhase('words'), preludeDuration + danmakuDuration)
     const whisperStart = window.setTimeout(() => setPhase('whisper'), preludeDuration + danmakuDuration + wordsDuration)
@@ -193,27 +193,56 @@ export default function FinaleOverlay({ fallbackFarewell }: FinaleOverlayProps) 
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.95, ease: 'easeInOut' }}
               >
-                <motion.p
-                  className="mx-auto mt-8 max-w-[min(94vw,60rem)] whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
-                  animate={
-                    phase === 'danmaku'
-                      ? { opacity: [0, 1, 0.42] }
-                      : { opacity: 1 }
-                  }
-                  transition={
-                    phase === 'danmaku'
-                      ? { duration: 4.8, ease: 'easeOut', times: [0, 0.22, 1] }
-                      : { duration: 0.8, ease: 'easeOut' }
-                  }
-                >
-                  {phase === 'prelude'
-                    ? '先安静一下。'
-                    : phase === 'danmaku'
-                      ? '让弹幕最后一次经过，此刻，轻轻放下今天的你。'
-                      : phase === 'words'
-                        ? '然后，只留下反复出现过的几个词。'
-                        : '让它们慢慢淡下去。'}
-                </motion.p>
+                <div className="relative mx-auto mt-8 min-h-[3.6rem] max-w-[min(94vw,60rem)]">
+                  <AnimatePresence mode="wait">
+                    {phase === 'words' ? (
+                      <motion.p
+                        key={`words-line-1-${replaySeed}`}
+                        className="absolute inset-0 whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 5.5, ease: 'easeOut', times: [0, 0.12, 1] }}
+                      >
+                        喧闹散去以后，是他们慢慢显现。
+                      </motion.p>
+                    ) : phase === 'whisper' ? null : (
+                      <motion.p
+                        key={`phase-line-${replaySeed}-${phase}`}
+                        className="whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
+                        initial={{ opacity: 0 }}
+                        animate={
+                          phase === 'danmaku'
+                            ? { opacity: [0, 1, 0] }
+                            : { opacity: 1 }
+                        }
+                        exit={{ opacity: 0 }}
+                        transition={
+                          phase === 'danmaku'
+                            ? { duration: 6.8, ease: 'easeOut', times: [0, 0.16, 1] }
+                            : { duration: 0.8, ease: 'easeOut' }
+                        }
+                      >
+                        {phase === 'prelude'
+                          ? '平复心绪'
+                          : phase === 'danmaku'
+                            ? '此刻，轻轻放下今天的你'
+                          : '让它们慢慢淡下去。'}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
+                  {phase === 'words' && (
+                    <motion.p
+                      className="absolute inset-0 whitespace-nowrap text-[clamp(1.35rem,3vw,2.45rem)] leading-[1.4] text-white/94"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 0, 1] }}
+                      transition={{ duration: 6.3, ease: 'easeOut', times: [0, 0.8, 1] }}
+                    >
+                      他们，指向何方？
+                    </motion.p>
+                  )}
+                </div>
               </motion.div>
             )}
 

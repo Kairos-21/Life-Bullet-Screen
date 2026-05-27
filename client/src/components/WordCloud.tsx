@@ -405,10 +405,26 @@ function GalaxyCloud({ words, maxWeight }: { words: { text: string; weight: numb
 
 const positiveWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '轻松', '满足', '笑', '爱', '睡']
 const emotionWords = ['快乐', '开心', '幸福', '自由', '热爱', '希望', '梦想', '温暖', '孤独', '难过', '害怕', '焦虑', '迷茫', '疲惫']
+const MIN_WORD_COUNT = 7
 
 export default function WordCloud() {
   const result = useAppStore((s) => s.result)
-  const words = useMemo(() => result?.wordCloud ?? [], [result?.wordCloud])
+  const words = useMemo(() => {
+    const sourceWords = result?.wordCloud ?? []
+    if (sourceWords.length >= MIN_WORD_COUNT) return sourceWords
+
+    const existingTexts = new Set(sourceWords.map((word) => word.text))
+    const fallbackPool = [...emotionWords, ...positiveWords]
+    const fallbackWords = fallbackPool
+      .filter((word) => !existingTexts.has(word) && !existingTexts.has(`${word}的`))
+      .slice(0, Math.max(0, MIN_WORD_COUNT - sourceWords.length))
+      .map((text, index) => ({
+        text,
+        weight: Math.max(1, 2.4 - index * 0.18),
+      }))
+
+    return [...sourceWords, ...fallbackWords]
+  }, [result?.wordCloud])
   const [style, setStyle] = useState<WordStyle>('particles')
 
   const maxWeight = useMemo(() => {

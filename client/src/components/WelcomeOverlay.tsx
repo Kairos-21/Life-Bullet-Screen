@@ -9,9 +9,9 @@ const questions = [
 ]
 
 const subtitles = [
-  '不是每一种念头，都要发送给全世界。',
-  '每一种心情，都值得拥有属于自己的弹幕。',
-  '那些一闪而过的念头，也值得被看见。',
+  '不是每一种念头，都要发送给全世界',
+  '每一种心情，都值得拥有属于自己的弹幕',
+  '那些一闪而过的念头，也值得被看见',
 ]
 
 export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
@@ -122,11 +122,11 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
 
             <motion.button
               onClick={handleEnter}
-              className="relative cursor-pointer rounded-full border border-white/10 bg-[linear-gradient(135deg,rgba(72,54,98,0.72),rgba(56,46,84,0.56))] px-11 py-3 text-sm font-medium text-white shadow-[0_14px_36px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:border-danmaku-accent/26 hover:bg-[linear-gradient(135deg,rgba(86,60,116,0.82),rgba(68,52,98,0.68))]"
+              className="welcome-entry-button relative cursor-pointer rounded-full border border-white/10 bg-[linear-gradient(135deg,rgba(72,54,98,0.72),rgba(56,46,84,0.56))] px-11 py-3 text-[15px] font-normal text-white shadow-[0_14px_36px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:border-danmaku-accent/26 hover:bg-[linear-gradient(135deg,rgba(86,60,116,0.82),rgba(68,52,98,0.68))]"
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              留下今天的这一条吧
+              留下今天的这一条
             </motion.button>
 
             <motion.p
@@ -135,7 +135,7 @@ export default function WelcomeOverlay({ onEnter }: { onEnter: () => void }) {
               animate={{ opacity: 1 }}
               transition={{ delay: 2.3, duration: 0.8 }}
             >
-              你的文字只会停留在你的浏览器里
+              这些话，只留给你自己
             </motion.p>
           </div>
         </motion.div>

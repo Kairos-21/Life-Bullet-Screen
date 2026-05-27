@@ -17,9 +17,9 @@ import { getMoodColors, neutral } from './utils/moodBackground'
 import FinaleOverlay from './components/FinaleOverlay'
 
 const rotatingLines = [
-  '有些话不一定要说完整。',
-  '有些情绪，也不需要立刻有答案。',
-  '这里收留没来得及说完的话。',
+  '有些话不一定要说完整',
+  '有些情绪，也不需要立刻有答案',
+  '这里收留没来得及说完的话',
 ]
 
 const farewellMessages: Record<string, string[]> = {
@@ -131,12 +131,31 @@ export default function App() {
     return getFarewell(mood)
   }, [mood])
 
+  const shouldShowComposer = !hasResult && viewStage !== 'echo'
+  const shouldRevealControls = content.trim().length >= 12 || showControls
+
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setLineIndex((current) => (current + 1) % rotatingLines.length)
-    }, 3200)
-    return () => window.clearInterval(timer)
-  }, [])
+    if (!welcomeDone || !shouldShowComposer) return
+
+    setLineIndex(0)
+    let cancelled = false
+    let timer = 0
+
+    const queueNext = () => {
+      timer = window.setTimeout(() => {
+        if (cancelled) return
+        setLineIndex((current) => (current + 1) % rotatingLines.length)
+        queueNext()
+      }, 5000)
+    }
+
+    queueNext()
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [welcomeDone, shouldShowComposer])
 
   useEffect(() => {
     if (hasResult && status === 'success' && mood) {
@@ -156,9 +175,6 @@ export default function App() {
     reset()
     setShowControls(false)
   }
-
-  const shouldShowComposer = !hasResult && viewStage !== 'echo'
-  const shouldRevealControls = content.trim().length >= 12 || showControls
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -181,7 +197,7 @@ export default function App() {
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
                   <div className="emotional-stage mx-auto max-w-4xl px-2 py-6 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Arrival</p>
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
                     <motion.p
                       key={lineIndex}
                       className="mx-auto mt-6 max-w-3xl text-[clamp(1.7rem,4.2vw,3.4rem)] font-medium leading-[1.28] text-white"
@@ -216,7 +232,7 @@ export default function App() {
                           <p className="text-[11px] uppercase tracking-[0.28em] text-danmaku-muted/42">A Softer Echo</p>
                           <h2 className="mt-3 text-xl font-semibold text-white">如果愿意，它还可以被更深地读一遍。</h2>
                           <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-danmaku-text-dim/75">
-                            轻量的显影适合简单尝试；如果你想让它更完整一点，可以换一种回声方式。
+                            轻量的显影适合简单尝试；如果你想让它更懂你，可以换一种回声方式。
                           </p>
                         </div>
 
@@ -279,13 +295,13 @@ export default function App() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.45, ease: 'easeOut' }}
                 >
-                  <div className="mx-auto mb-8 flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-3xl">
-                    <p className="text-center text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
+                  <div className="mx-auto mb-8 max-w-4xl">
+                    <div className="mx-auto max-w-3xl text-center">
+                    <p className="text-[11px] uppercase tracking-[0.32em] text-danmaku-muted/42">Slowly Revealed</p>
                     <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-[2.7rem]">
                       <AutoFitLine text="那些散落的念头，正在慢慢拼出此刻的你" />
                     </h2>
-                    <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
+                    <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-danmaku-text-dim/78 sm:text-base">
                       先让此刻显影，剩下的故事，会慢慢浮现
                     </p>
 
