@@ -26,6 +26,17 @@ body {
   --mood-blob-bottom: rgba(245, 197, 24, 0.03);
 }
 
+body {
+  caret-color: transparent;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+  caret-color: auto;
+}
+
 body::before {
   content: '';
   position: fixed;

@@ -145,7 +145,7 @@ export default function EchoStage() {
             onClick={() => setViewStage('revealed')}
             className="cursor-pointer rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-danmaku-text-dim transition-colors hover:bg-white/[0.08] hover:text-white"
           >
-            想继续的话，就往下看看
+                继续看看
           </button>
           <span className="text-xs text-danmaku-muted/38">
             {countdownStarted
